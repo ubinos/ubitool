@@ -1,0 +1,10 @@
+README.md
+pyproject.toml
+ubitool/__init__.py
+ubitool/main.py
+ubitool.egg-info/PKG-INFO
+ubitool.egg-info/SOURCES.txt
+ubitool.egg-info/dependency_links.txt
+ubitool.egg-info/entry_points.txt
+ubitool.egg-info/requires.txt
+ubitool.egg-info/top_level.txt

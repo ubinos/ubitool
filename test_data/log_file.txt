@@ -1,0 +1,10 @@
+Line 1: Application started
+Line 2: Loading configuration
+Line 3: Database connected
+Line 4: Server listening on port 8080
+Line 5: User login: admin
+Line 6: Processing request /api/users
+Line 7: Query executed successfully
+Line 8: Response sent: 200 OK
+Line 9: User logout: admin
+Line 10: Application shutdown

@@ -1,0 +1,15 @@
+2025-01-01 10:00:01 INFO Starting application
+2025-01-01 10:00:02 DEBUG Loading modules
+2025-01-01 10:00:03 INFO Database connection established
+2025-01-01 10:00:04 WARN Configuration file not found, using defaults
+2025-01-01 10:00:05 INFO Server started on port 3000
+2025-01-01 10:00:06 DEBUG Memory usage: 45MB
+2025-01-01 10:00:07 INFO First user connected
+2025-01-01 10:00:08 ERROR Failed to load user preferences
+2025-01-01 10:00:09 INFO User preferences loaded from cache
+2025-01-01 10:00:10 DEBUG Processing user request
+2025-01-01 10:00:11 INFO Request processed successfully
+2025-01-01 10:00:12 WARN High memory usage detected
+2025-01-01 10:00:13 INFO Garbage collection triggered
+2025-01-01 10:00:14 DEBUG Memory usage: 32MB
+2025-01-01 10:00:15 INFO Application running normally
