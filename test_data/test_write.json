@@ -1,0 +1,15 @@
+{
+  "existing": "value",
+  "C_Cpp": {
+    "default": {
+      "compileCommands": "./compile_commands.json"
+    }
+  },
+  "test": {
+    "array": [
+      1,
+      2,
+      3
+    ]
+  }
+}

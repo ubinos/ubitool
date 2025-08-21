@@ -32,9 +32,9 @@ ubitool --help
 
 - `tail` - Print the last part of a file
 - `htail` - Print the last part of a file with position tracking
-- `bhtail` - Print the last part of a file from byobu session with position tracking
-- `bsend` - Send keys to a byobu session
-- `stbsend` - Send keys to a byobu session and wait for expected output
+- `bhtail` - Print the last part of a file from tmux session with position tracking
+- `bsend` - Send keys to a tmux session
+- `stbsend` - Send keys to a tmux session and wait for expected output
 - `shell` - Execute shell commands
 - `stshell` - Execute shell commands and wait for expected output
 - `ls` - List directory contents with filtering
@@ -42,7 +42,7 @@ ubitool --help
 
 ## Development
 
-This package is part of the ubinos ecosystem and is designed to work with byobu sessions and log monitoring.
+This package is part of the ubinos ecosystem and is designed to work with tmux sessions and log monitoring.
 
 ## Requirements
 
