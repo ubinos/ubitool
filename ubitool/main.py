@@ -350,15 +350,15 @@ def _read_new_content(file: str, position_file: str, last_position: int, lines: 
 
 @app.command()
 def shtail(
-    path: str = typer.Argument("~/Workspace/log/tmux", help="Directory containing byobu/tmux log files."),
-    target_session: str = typer.Option(..., "-t", "--target-session", help="Target byobu/tmux session name."),
+    path: str = typer.Argument("~/Workspace/log/tmux", help="Directory containing tmux log files."),
+    target_session: str = typer.Option(..., "-t", "--target-session", help="Target tmux session name."),
     lines: int = typer.Option(None, "-n", "--lines", help="Maximum number of new lines to display."),
     bytes_count: int = typer.Option(None, "-c", "--bytes", help="Maximum number of new bytes to display. (Overrides -n if both specified)"),
     reset: bool = typer.Option(False, "--reset", help="Reset the saved position and read from the beginning."),
     last: bool = typer.Option(False, "--last", help="Mark current end of file as read (skip to end without displaying)."),
     keep: bool = typer.Option(False, "--keep", help="Do not update last read position.")
 ):
-    """Execute htail on the latest byobu/tmux session log file.
+    """Execute htail on the latest tmux session log file.
     
     Finds and reads the latest log file matching the pattern:
     PATH/session_<target-session>_window_0_pane_0_*.log"""
@@ -378,7 +378,7 @@ def shtail(
             print(f"Error: '{path}' is not a directory.")
             raise typer.Exit(1)
         
-        # Build the pattern for byobu/tmux log files
+        # Build the pattern for tmux log files
         pattern = os.path.join(path, f"session_{target_session}_window_0_pane_0_*.log")
         
         # Find matching log files
@@ -400,16 +400,16 @@ def shtail(
 
 
 def _get_htail_content_for_session(target_session: str, lines: int = None, bytes_count: int = None, keep: bool = True, output_path: str = None) -> str:
-    """Get new content from byobu/tmux session log using htail logic.
+    """Get new content from tmux session log using htail logic.
     Returns the new content as a string.
     This function is used by stssend to read session output."""
     import glob as glob_module
     
-    # Use provided output_path or default log path for byobu/tmux sessions
+    # Use provided output_path or default log path for tmux sessions
     log_path = os.path.expanduser(output_path) if output_path else os.path.expanduser("~/Workspace/log/tmux")
     
     try:
-        # Build the pattern for byobu/tmux log files
+        # Build the pattern for tmux log files
         pattern = os.path.join(log_path, f"session_{target_session}_window_0_pane_0_*.log")
         
         # Find matching log files
@@ -520,13 +520,13 @@ def _execute_htail_logic(file: str, lines: int, bytes_count: int, reset: bool, l
 @app.command()
 def ssend(
     keys: list[str] = typer.Argument(..., help="Keys to send."),
-    target_session: str = typer.Option(..., "-t", "--target-session", help="Target byobu/tmux session name.")
+    target_session: str = typer.Option(..., "-t", "--target-session", help="Target tmux session name.")
 ):
-    """Retry sending keys through byobu/tmux session"""
+    """Send keys to tmux session"""
     
     try:
-        # Build the byobu/tmux send-keys command
-        command = ["byobu", "send-keys", "-t", target_session] + keys
+        # Build the tmux send-keys command
+        command = ["tmux", "send-keys", "-t", target_session] + keys
         
         # Execute the command
         result = subprocess.run(
@@ -549,24 +549,24 @@ def ssend(
             print(result.stderr, end='')
             
     except FileNotFoundError:
-        print("Error: byobu/tmux command not found. Please make sure byobu/tmux is installed.")
+        print("Error: tmux command not found. Please make sure tmux is installed.")
         raise typer.Exit(1)
     except Exception as e:
-        print(f"Error executing byobu/tmux send-keys: {e}")
+        print(f"Error executing tmux send-keys: {e}")
         raise typer.Exit(1)
 
 
 @app.command()
 def stssend(
     keys: list[str] = typer.Argument(..., help="Keys to send."),
-    target_session: str = typer.Option(..., "-t", "--target-session", help="Target byobu/tmux session name."),
+    target_session: str = typer.Option(..., "-t", "--target-session", help="Target tmux session name."),
     expect: str = typer.Option(..., "--expect", help="Expected string in the output."),
     retry: int = typer.Option(10, "--retry", help="Maximum number of retries."),
     retry_interval: int = typer.Option(1, "--retry-interval", help="Interval between retries in seconds."),
     timeout: int = typer.Option(30, "--timeout", help="Timeout for each command execution in seconds."),
-    output_path: str = typer.Option("~/Workspace/log/tmux", "--output-path", help="Directory containing byobu/tmux log files. Finds and reads the latest log file matching the pattern: PATH/session_<target-session>_window_0_pane_0_*.log")
+    output_path: str = typer.Option("~/Workspace/log/tmux", "-o", "--output-path", help="Directory containing tmux log files. Finds and reads the latest log file matching the pattern: PATH/session_<target-session>_window_0_pane_0_*.log")
 ):
-    """Retry sending keys through byobu/tmux session (strict ssend).
+    """Retry sending keys to tmux session (strict ssend).
     
     This command repeatedly sends keys until the output
     contains the expected string or the retry limit is reached.
@@ -583,7 +583,7 @@ def stssend(
             print(f"Attempt {attempt}/{retry}: Sending keys to session '{target_session}'...")
             
             # Send keys using ssend logic
-            command = ["byobu", "send-keys", "-t", target_session] + keys
+            command = ["tmux", "send-keys", "-t", target_session] + keys
             result = subprocess.run(
                 command,
                 capture_output=True,
@@ -633,7 +633,7 @@ def stssend(
                 print(f"Retrying in {retry_interval} second(s)...")
                 time.sleep(retry_interval)
         except FileNotFoundError:
-            print("Error: byobu/tmux command not found. Please make sure byobu/tmux is installed.")
+            print("Error: tmux command not found. Please make sure tmux is installed.")
             raise typer.Exit(1)
         except Exception as e:
             print(f"Attempt {attempt}: Error executing command: {e}")
