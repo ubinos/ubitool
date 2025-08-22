@@ -75,9 +75,9 @@ ubitool은 pip를 통해 설치할 수 있습니다:
         ubitool is a toolbox for ubinos.
 
     Options:
+        -h, --help      Show this message and exit.
         -v, --version   Show the version and exit.
         -d, --debug     Enable debug mode (interactive debugging with ipdb).
-        --help          Show this message and exit.
 
     Commands:
         tail            Print the last part of a file.
@@ -104,11 +104,11 @@ tail 명령어
         FILE  Path to the file to read.  [required]
 
     Options:
+        -h, --help          Show this message and exit.
         -n, --lines INTEGER Number of lines to display from the end of the file.
                             [default: 10]
         -c, --bytes INTEGER Number of bytes to display from the end of the file.
                             (Overrides -n if both specified)
-        --help              Show this message and exit.
 
     Examples:
         ubitool tail /var/log/syslog              # Show last 10 lines
@@ -133,6 +133,7 @@ htail 명령어
         FILE  Path to the file to read.  [required]
 
     Options:
+        -h, --help          Show this message and exit.
         -n, --lines INTEGER Maximum number of new lines to display.
                             [default: 10]
         -c, --bytes INTEGER Maximum number of new bytes to display.
@@ -140,7 +141,6 @@ htail 명령어
         --keep              Do not update last read position.
         --reset             Reset the saved position and read from the beginning.
         --last              Mark current end of file as read (skip to end without displaying).
-        --help              Show this message and exit.
 
     Examples:
         ubitool htail /var/log/app.log                   # Show new content since last read
@@ -166,6 +166,7 @@ shtail 명령어
         PATH  Directory containing tmux log files.  [default: ~/Workspace/log/tmux]
 
     Options:
+        -h, --help                  Show this message and exit.
         -t, --target-session TEXT   Target tmux session name.  [required]
         -n, --lines INTEGER         Maximum number of new lines to display.
                                     [default: 10]
@@ -174,7 +175,6 @@ shtail 명령어
         --keep                      Do not update last read position.
         --reset                     Reset the saved position and read from the beginning.
         --last                      Mark current end of file as read (skip to end without displaying).
-        --help                      Show this message and exit.
 
     Examples:
         ubitool shtail -t build1 ~/Workspace/log/tmux         # Show new content since last read
@@ -196,8 +196,8 @@ ssend 명령어
         KEYS  Keys to send.  [required]
 
     Options:
+        -h, --help                  Show this message and exit.
         -t, --target-session TEXT   Target tmux session name.  [required]
-        --help                      Show this message and exit.
 
     Examples:
         ubitool ssend -t build1 "pwd" Enter   # Same as tmux send-keys -t build1 "pwd" Enter
@@ -221,7 +221,12 @@ stssend 명령어
         KEYS  Keys to send.  [required]
 
     Options:
+        -h, --help                  Show this message and exit.
         -t, --target-session TEXT   Target tmux session name.  [required]
+        -o, --output-path PATH      Directory containing tmux log files.
+                                    Finds and reads the latest log file matching the pattern:
+                                    PATH/session_<target-session>_window_0_pane_0_*.log
+                                    [default: ~/Workspace/log/tmux]
         --expect TEXT               Expected string in the output.  [required]
         --retry INTEGER             Maximum number of retries.
                                     [default: 10]
@@ -229,17 +234,12 @@ stssend 명령어
                                     [default: 1]
         --timeout INTEGER           Timeout for each command execution in seconds.
                                     [default: 30]
-        --output-path PATH          Directory containing tmux log files.
-                                    Finds and reads the latest log file matching the pattern:
-                                    PATH/session_<target-session>_window_0_pane_0_*.log
-                                    [default: ~/Workspace/log/tmux]
-        --help                      Show this message and exit.
 
     Examples:
-        ubitool stssend -t build1 --expect "ready" "systemctl status myservice" Enter
-        ubitool stssend -t build1 --expect "connected" --retry 20 "ping -c 1 server.com" Enter
-        ubitool stssend -t build1 --expect "active" --timeout 5 "systemctl is-active myservice" Enter
-        ubitool stssend -t build1 --expect "ready" --retry-interval 5 "systemctl status myservice" Enter
+        ubitool stssend -t build1 -o ~/Workspace/ubinos/ubiworks/log/tmux --expect "ready" "systemctl status myservice" Enter
+        ubitool stssend -t build1 -o ~/Workspace/ubinos/ubiworks/log/tmux --expect "connected" --retry 20 "ping -c 1 server.com" Enter
+        ubitool stssend -t build1 -o ~/Workspace/ubinos/ubiworks/log/tmux --expect "active" --timeout 5 "systemctl is-active myservice" Enter
+        ubitool stssend -t build1 -o ~/Workspace/ubinos/ubiworks/log/tmux --expect "ready" --retry-interval 5 "systemctl status myservice" Enter
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 shell 명령어
@@ -255,10 +255,10 @@ shell 명령어
         COMMAND  Shell command to execute (use quotes for complex commands).  [required]
 
     Options:
+        -h, --help              Show this message and exit.
         --timeout INTEGER       Command execution timeout in seconds.
                                 [default: 30]
         --capture-stderr        Capture and display stderr output as well.
-        --help                  Show this message and exit.
 
     Examples:
         ubitool shell "ls -la"                    # List files
@@ -282,6 +282,7 @@ stshell 명령어
         COMMAND  Shell command to execute (use quotes for complex commands).  [required]
 
     Options:
+        -h, --help                  Show this message and exit.
         --expect TEXT               Expected string in the output.  [required]
         --retry INTEGER             Maximum number of retries.
                                     [default: 10]
@@ -290,7 +291,6 @@ stshell 명령어
         --timeout INTEGER           Timeout for each command execution in seconds.
                                     [default: 30]
         --capture-stderr            Capture and display stderr output as well.
-        --help                      Show this message and exit.
 
     Examples:
         ubitool stshell --expect "ready" "systemctl status myservice"
@@ -315,8 +315,8 @@ ls 명령어
                [default: None]
 
     Options:
+        -h, --help  Show this message and exit.
         -a, --all   Include entries starting with dot (.)
-        --help      Show this message and exit.
 
     Examples:
         ubitool ls                                # List current directory
@@ -339,8 +339,8 @@ sort 명령어
         FILE  File to sort. If not provided, reads from stdin.  [optional]
 
     Options:
+        -h, --help          Show this message and exit.
         -r, --reverse       Reverse the result of comparisons.
-        --help              Show this message and exit.
 
     Examples:
         ubitool sort test.txt                     # Sort lines in ascending order
