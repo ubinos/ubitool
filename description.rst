@@ -107,6 +107,32 @@ ubitool은 pip를 통해 설치할 수 있습니다:
         stshell         Retry shell command until expected result appears (strict shell).
         ls              List directory contents or files matching patterns.
         sort            Sort lines of text file or stdin input.
+        json            Read or write json file.
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+json 명령어
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. code-block:: bash
+
+    Usage: ubitool json [OPTIONS] SUBCMD FILE
+
+        Print or write json file.
+
+    Arguments:
+        SUBCMD  Subcommand  [required]
+        FILE    Path to the json target file.  [required]
+
+    SUBCMD:
+        read    Print the json target file
+
+    Options:
+        -h, --help          Show this message and exit.
+        -f, --field TEXT    Print or write only the specified field
+
+    Examples:
+        ubitool json read .vscode/settings.test.json    # Print all field of target json file
+        ubitool json -f "C_Cpp.default.compileCommands" read .vscode/settings.test.json # Print "C_Cpp.default.compileCommands" field of target json file
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 tail 명령어

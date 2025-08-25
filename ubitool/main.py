@@ -13,6 +13,7 @@ from .commands.shell_cmd import shell_command
 from .commands.stshell_cmd import stshell_command
 from .commands.ls_cmd import ls_command
 from .commands.sort_cmd import sort_command
+from .commands.json_cmd import json_command
 
 __version__ = "1.0.0"
 
@@ -55,6 +56,7 @@ app.command(name="shell")(shell_command)
 app.command(name="stshell")(stshell_command)
 app.command(name="ls")(ls_command)
 app.command(name="sort")(sort_command)
+app.command(name="json")(json_command)
 
 
 if __name__ == "__main__":

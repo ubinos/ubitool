@@ -1,0 +1,48 @@
+{
+  "C_Cpp": {
+    "default": {
+      "compileCommands": "build/compile_commands.json",
+      "configurationProvider": "ms-vscode.cmake-tools",
+      "includePath": [
+        "${workspaceFolder}/include",
+        "${workspaceFolder}/lib"
+      ],
+      "defines": [
+        "DEBUG=1",
+        "VERSION=\"1.0.0\""
+      ]
+    },
+    "configurations": [
+      {
+        "name": "Linux",
+        "includePath": [
+          "${workspaceFolder}/**"
+        ],
+        "defines": [
+          "_DEBUG",
+          "UNICODE",
+          "_UNICODE"
+        ],
+        "compilerPath": "/usr/bin/gcc",
+        "cStandard": "c17",
+        "cppStandard": "c++17",
+        "intelliSenseMode": "linux-gcc-x64"
+      }
+    ]
+  },
+  "editor": {
+    "tabSize": 4,
+    "insertSpaces": true,
+    "detectIndentation": false
+  },
+  "files": {
+    "associations": {
+      "*.h": "c",
+      "*.c": "c"
+    },
+    "exclude": {
+      "**/build": true,
+      "**/.git": true
+    }
+  }
+}
