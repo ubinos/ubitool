@@ -143,11 +143,17 @@ json 명령어
         # Write 120 to "git.detectSubmodulesLimit" key
         ubitool json -w -k "[\"git.detectSubmodulesLimit\"]" -v 120 .vscode/settings.json
 
-        # Read the value of "configurations[?name=='target app debug'].cwd | [0]" key
-        ubitool json -r -k "configurations[?name=='target app debug'].cwd | [0]" .vscode/launch.json
+        # Read the value of "configurations[?name==\"target app debug\"].cwd | [0]" key
+        ubitool json -r -k "configurations[?name==\"target app debug\"].cwd | [0]" .vscode/launch.json
 
-        # Write "" of "configurations[?name=='target app debug'].cwd | [0]" key
-        ubitool json -w -k "configurations[?name=='target app debug'].cwd | [0]" -v "build/pico_hi_world" .vscode/launch.json
+        # Write "" of "configurations[?name==\"target app debug\"].cwd | [0]" key
+        ubitool json -w -k "configurations[?name==\"target app debug\"].cwd | [0]" -v "./build/pico_hi_world" .vscode/launch.json
+
+        # Read the value of "tasks[?label==\"target app reset\"].options.cwd | [0]" key
+        ubitool json -r -k "tasks[?label==\"target app reset\"].options.cwd | [0]" .vscode/tasks.json
+
+        # Write "" of "tasks[?label==\"target app reset\"].options.cwd | [0]" key
+        ubitool json -w -k "tasks[?label==\"target app reset\"].options.cwd | [0]" -v "./build/pico_hi_world" .vscode/tasks.json
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 tail 명령어

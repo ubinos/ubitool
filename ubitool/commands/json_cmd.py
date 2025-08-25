@@ -10,6 +10,16 @@ import jmespath
 import re
 
 
+def _normalize_jmespath_query(query):
+    """Normalize JMESPath query by converting escaped quotes to regular quotes."""
+    # Replace \" with ' in the query for JMESPath compatibility
+    # This handles cases like name=="value" -> name='value'
+    normalized = query.replace('\\"', "'")
+    # Also handle cases where the input has literal \" characters
+    normalized = normalized.replace('=="', "=='").replace('"', "'")
+    return normalized
+
+
 def _update_with_jmespath(data, jmespath_query, new_value):
     """Update JSON data using JMESPath query to locate the target."""
     try:
@@ -27,27 +37,48 @@ def _update_with_jmespath(data, jmespath_query, new_value):
                     # Handle [0] pipe operation to get first item
                     if pipe_operation == "[0]":
                         # We need to find the actual location in the original data structure
-                        # For configurations[?name=='target app debug'].cwd | [0]
-                        # We need to find the configuration with name 'target app debug' and update its cwd
-                        if base_query.startswith("configurations[?") and ".cwd" in base_query:
-                            # Extract the filter condition
-                            match = re.search(r"configurations\[\?(.+?)\]\.(.+)", base_query)
-                            if match:
-                                condition = match.group(1)
-                                field = match.group(2)
-                                
-                                # Parse condition like "name=='target app debug'"
-                                if "==" in condition:
-                                    cond_parts = condition.split("==")
-                                    if len(cond_parts) == 2:
-                                        key_name = cond_parts[0].strip()
-                                        target_value = cond_parts[1].strip().strip("'\"")
-                                        
-                                        # Find and update the matching configuration
-                                        if "configurations" in data and isinstance(data["configurations"], list):
-                                            for config in data["configurations"]:
-                                                if isinstance(config, dict) and config.get(key_name) == target_value:
-                                                    config[field] = new_value
+                        # Handle both configurations and tasks arrays
+                        array_match = re.search(r"(\w+)\[\?(.+?)\]\.(.+)", base_query)
+                        if array_match:
+                            array_name = array_match.group(1)  # e.g., "configurations" or "tasks"
+                            condition = array_match.group(2)   # e.g., "name=='target app debug'"
+                            field_path = array_match.group(3)  # e.g., "cwd" or "options.cwd"
+                            
+                            # Parse condition like "name=='target app debug'" or "label==\"target app reset\""
+                            if "==" in condition:
+                                cond_parts = condition.split("==")
+                                if len(cond_parts) == 2:
+                                    key_name = cond_parts[0].strip()
+                                    target_value = cond_parts[1].strip()
+                                    
+                                    # Handle escaped quotes
+                                    if target_value.startswith('\\"') and target_value.endswith('\\"'):
+                                        target_value = target_value[2:-2]  # Remove \" and \"
+                                    elif target_value.startswith("'") and target_value.endswith("'"):
+                                        target_value = target_value[1:-1]  # Remove ' and '
+                                    elif target_value.startswith('"') and target_value.endswith('"'):
+                                        target_value = target_value[1:-1]  # Remove " and "
+                                    
+                                    # Find and update the matching item in the array
+                                    if array_name in data and isinstance(data[array_name], list):
+                                        for item in data[array_name]:
+                                            if isinstance(item, dict) and item.get(key_name) == target_value:
+                                                # Handle nested field paths like "options.cwd"
+                                                if "." in field_path:
+                                                    field_parts = field_path.split(".")
+                                                    current = item
+                                                    # Navigate to the nested object
+                                                    for part in field_parts[:-1]:
+                                                        if part in current and isinstance(current[part], dict):
+                                                            current = current[part]
+                                                        else:
+                                                            return False
+                                                    # Set the final field
+                                                    current[field_parts[-1]] = new_value
+                                                    return True
+                                                else:
+                                                    # Simple field access
+                                                    item[field_path] = new_value
                                                     return True
                 return False
         else:
@@ -178,7 +209,9 @@ def json_command(
                     else:
                         # First try: direct JMESPath query (for complex queries and simple nested paths)
                         try:
-                            result = jmespath.search(clean_key, data)
+                            # Normalize the query to handle escaped quotes
+                            normalized_key = _normalize_jmespath_query(clean_key)
+                            result = jmespath.search(normalized_key, data)
                         except:
                             result = None
                         
@@ -255,7 +288,8 @@ def json_command(
                     # Check if this is a complex JMESPath query that needs special handling
                     elif ("[?" in clean_key and "]" in clean_key) or ("|" in clean_key):
                         # This is a complex JMESPath query - we need to find the target and update it
-                        success = _update_with_jmespath(data, clean_key, parsed_value)
+                        normalized_key = _normalize_jmespath_query(clean_key)
+                        success = _update_with_jmespath(data, normalized_key, parsed_value)
                         if not success:
                             print(f"Error: Could not update using JMESPath query '{key}'", file=sys.stderr)
                             raise typer.Exit(1)
