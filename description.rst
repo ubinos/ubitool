@@ -132,16 +132,16 @@ json 명령어
 
     Examples:
         # Read the value of "C_Cpp.default.compileCommands" key
-        ubitool json -r -k ".C_Cpp.default.compileCommands" .vscode/settings.json
+        ubitool json -r -k "[\"C_Cpp.default.compileCommands\"]" .vscode/settings.json
 
         # Write "./compile_commands.json" to "C_Cpp.default.compileCommands" key
-        ubitool json -w -k ".C_Cpp.default.compileCommands" -v "./compile_commands.json" .vscode/settings.json
+        ubitool json -w -k "[\"C_Cpp.default.compileCommands\"]" -v "./compile_commands.json" .vscode/settings.json
 
         # Read the value of "git.detectSubmodulesLimit" key
-        ubitool json -r -k ".git.detectSubmodulesLimit" .vscode/settings.json
+        ubitool json -r -k "[\"git.detectSubmodulesLimit\"]" .vscode/settings.json
 
         # Write 120 to "git.detectSubmodulesLimit" key
-        ubitool json -w -k ".git.detectSubmodulesLimit" -v 120 .vscode/settings.json
+        ubitool json -w -k "[\"git.detectSubmodulesLimit\"]" -v 120 .vscode/settings.json
 
         # Read the value of "configurations[?name=='target app debug'].cwd | [0]" key
         ubitool json -r -k "configurations[?name=='target app debug'].cwd | [0]" .vscode/launch.json

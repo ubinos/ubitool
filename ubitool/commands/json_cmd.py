@@ -166,8 +166,34 @@ def json_command(
                     # Remove leading "." if present for JMESPath compatibility
                     clean_key = key.lstrip(".")
                     
-                    # Use JMESPath directly - it can handle complex queries
-                    result = jmespath.search(clean_key, data)
+                    # Try different key access approaches
+                    result = None
+                    
+                    # Check for bracket notation for literal keys like ["key.with.dots"]
+                    if clean_key.startswith('["') and clean_key.endswith('"]'):
+                        # Extract the literal key from ["key"] format
+                        literal_key = clean_key[2:-2]  # Remove [" and "]
+                        if literal_key in data:
+                            result = data[literal_key]
+                    else:
+                        # First try: direct JMESPath query (for complex queries and simple nested paths)
+                        try:
+                            result = jmespath.search(clean_key, data)
+                        except:
+                            result = None
+                        
+                        # Second try: if result is None and key contains dots, try as quoted literal key
+                        if result is None and "." in clean_key and not ("[" in clean_key or "]" in clean_key or "|" in clean_key):
+                            # This might be a literal key with dots, try as quoted key
+                            quoted_key = f'"{clean_key}"'
+                            try:
+                                result = jmespath.search(quoted_key, data)
+                            except:
+                                result = None
+                        
+                        # Third try: direct dictionary access for literal keys
+                        if result is None and clean_key in data:
+                            result = data[clean_key]
                     
                     if result is None:
                         # Check if the path exists in the data
@@ -221,8 +247,13 @@ def json_command(
                     # Remove leading "." if present for JMESPath compatibility
                     clean_key = key.lstrip(".")
                     
+                    # Check for bracket notation for literal keys like ["key.with.dots"]
+                    if clean_key.startswith('["') and clean_key.endswith('"]'):
+                        # Extract the literal key from ["key"] format
+                        literal_key = clean_key[2:-2]  # Remove [" and "]
+                        data[literal_key] = parsed_value
                     # Check if this is a complex JMESPath query that needs special handling
-                    if ("[?" in clean_key and "]" in clean_key) or ("|" in clean_key):
+                    elif ("[?" in clean_key and "]" in clean_key) or ("|" in clean_key):
                         # This is a complex JMESPath query - we need to find the target and update it
                         success = _update_with_jmespath(data, clean_key, parsed_value)
                         if not success:
@@ -233,21 +264,26 @@ def json_command(
                         unquoted_key = clean_key[1:-1]  # Remove quotes
                         data[unquoted_key] = parsed_value
                     elif "." in clean_key and not ("[" in clean_key or "]" in clean_key):
-                        # Split the key path and navigate/create nested structure (simple dot notation)
-                        keys = clean_key.split(".")
-                        current = data
-                        
-                        # Navigate to the parent of the target key
-                        for k in keys[:-1]:
-                            if k not in current:
-                                current[k] = {}
-                            elif not isinstance(current[k], dict):
-                                print(f"Error: Cannot navigate through non-dict key '{k}'", file=sys.stderr)
-                                raise typer.Exit(1)
-                            current = current[k]
-                        
-                        # Set the final key
-                        current[keys[-1]] = parsed_value
+                        # Check if this is a literal key first
+                        if clean_key in data:
+                            # This is a literal key with dots in the name
+                            data[clean_key] = parsed_value
+                        else:
+                            # Split the key path and navigate/create nested structure (simple dot notation)
+                            keys = clean_key.split(".")
+                            current = data
+                            
+                            # Navigate to the parent of the target key
+                            for k in keys[:-1]:
+                                if k not in current:
+                                    current[k] = {}
+                                elif not isinstance(current[k], dict):
+                                    print(f"Error: Cannot navigate through non-dict key '{k}'", file=sys.stderr)
+                                    raise typer.Exit(1)
+                                current = current[k]
+                            
+                            # Set the final key
+                            current[keys[-1]] = parsed_value
                     else:
                         # Simple key assignment or array access
                         if "[" in clean_key and "]" in clean_key:
