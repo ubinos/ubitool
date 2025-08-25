@@ -115,24 +115,26 @@ json 명령어
 
 .. code-block:: bash
 
-    Usage: ubitool json [OPTIONS] SUBCMD FILE
+    Usage: ubitool json [OPTIONS] FILE
 
         Print or write json file.
 
     Arguments:
-        SUBCMD  Subcommand  [required]
         FILE    Path to the json target file.  [required]
 
-    SUBCMD:
-        read    Print the json target file
-
     Options:
-        -h, --help          Show this message and exit.
-        -f, --field TEXT    Print or write only the specified field
+        -h, --help           Show this message and exit.
+        -r, --read           Print the value of a specified field of the json target file (requires --field)
+        -w, --write          Write a specified value to a specified field of the json target file (requires --field and --value)
+        -f, --field TEXT     Specify a field
+        -v, --value TEXT     Specify a value
 
     Examples:
-        ubitool json read .vscode/settings.test.json    # Print all field of target json file
-        ubitool json -f "C_Cpp.default.compileCommands" read .vscode/settings.test.json # Print "C_Cpp.default.compileCommands" field of target json file
+        # Print the value of "C_Cpp.default.compileCommands" field
+        ubitool json -r -f "C_Cpp.default.compileCommands" .vscode/settings.test.json
+
+        # Write "./compile_commands.json" to "C_Cpp.default.compileCommands" field
+        ubitool json -w -f "C_Cpp.default.compileCommands" -v "./compile_commands.json" .vscode/settings.test.json
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 tail 명령어
