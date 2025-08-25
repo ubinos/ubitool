@@ -124,17 +124,23 @@ json 명령어
 
     Options:
         -h, --help           Show this message and exit.
-        -r, --read           Print the value of a specified field of the json target file (requires --field)
-        -w, --write          Write a specified value to a specified field of the json target file (requires --field and --value)
-        -f, --field TEXT     Specify a field
+        -r, --read           Print the value of a specified key of the json target file (requires --key)
+        -w, --write          Write a specified value to a specified key of the json target file (requires --key and --value)
+        -k, --key TEXT       Specify a key
         -v, --value TEXT     Specify a value
 
     Examples:
-        # Print the value of "C_Cpp.default.compileCommands" field
-        ubitool json -r -f "C_Cpp.default.compileCommands" .vscode/settings.test.json
+        # Read the value of "C_Cpp.default.compileCommands" key
+        ubitool json -r -k "C_Cpp.default.compileCommands" .vscode/settings.test.json
 
-        # Write "./compile_commands.json" to "C_Cpp.default.compileCommands" field
-        ubitool json -w -f "C_Cpp.default.compileCommands" -v "./compile_commands.json" .vscode/settings.test.json
+        # Write "./compile_commands.json" to "C_Cpp.default.compileCommands" key
+        ubitool json -w -k "C_Cpp.default.compileCommands" -v "./compile_commands.json" .vscode/settings.test.json
+
+        # Read the value of "git.detectSubmodulesLimit" key
+        ubitool json -r -k "git.detectSubmodulesLimit" .vscode/settings.test.json
+
+        # Write 120 to "git.detectSubmodulesLimit" key
+        ubitool json -w -k "git.detectSubmodulesLimit" -v 120 .vscode/settings.test.json
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 tail 명령어

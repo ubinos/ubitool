@@ -9,18 +9,18 @@ import typer
 
 def json_command(
     file: str,
-    read: bool = typer.Option(False, "-r", "--read", help="Print the value of a specified field of the json target file (requires --field)"),
-    write: bool = typer.Option(False, "-w", "--write", help="Write a specified value to a specified field of the json target file (requires --field and --value)"),
-    field: Optional[str] = typer.Option(None, "-f", "--field", help="Specify a field"),
+    read: bool = typer.Option(False, "-r", "--read", help="Print the value of a specified key of the json target file (requires --key)"),
+    write: bool = typer.Option(False, "-w", "--write", help="Write a specified value to a specified key of the json target file (requires --key and --value)"),
+    key: Optional[str] = typer.Option(None, "-k", "--key", help="Specify a key"),
     value: Optional[str] = typer.Option(None, "-v", "--value", help="Specify a value")
 ):
     """Print or write json file.
     
     Args:
         file: Path to the json target file
-        read: Print the value of a specified field
-        write: Write a value to a specified field
-        field: Field to read or write
+        read: Print the value of a specified key
+        write: Write a value to a specified key
+        key: Key to read or write
         value: Value to write
     """
     try:
@@ -35,12 +35,12 @@ def json_command(
             print("Error: Cannot specify both --read and --write", file=sys.stderr)
             raise typer.Exit(1)
             
-        if read and not field:
-            print("Error: --read requires --field", file=sys.stderr)
+        if read and not key:
+            print("Error: --read requires --key", file=sys.stderr)
             raise typer.Exit(1)
             
-        if write and (not field or value is None):
-            print("Error: --write requires both --field and --value", file=sys.stderr)
+        if write and (not key or value is None):
+            print("Error: --write requires both --key and --value", file=sys.stderr)
             raise typer.Exit(1)
         
         # Read operation
@@ -60,18 +60,18 @@ def json_command(
                 raise typer.Exit(1)
             
             try:
-                # First try direct field access (for keys containing dots)
-                if field in data:
-                    result = data[field]
+                # First try direct key access (for keys containing dots)
+                if key in data:
+                    result = data[key]
                 else:
-                    # Navigate through nested fields using dot notation
-                    keys = field.split('.')
+                    # Navigate through nested keys using dot notation
+                    keys = key.split('.')
                     result = data
-                    for key in keys:
+                    for k in keys:
                         if isinstance(result, dict):
-                            result = result[key]
+                            result = result[k]
                         else:
-                            raise KeyError(f"Cannot access '{key}' on non-dict object")
+                            raise KeyError(f"Cannot access '{k}' on non-dict object")
                 
                 # Pretty print the result
                 if isinstance(result, (dict, list)):
@@ -79,7 +79,7 @@ def json_command(
                 else:
                     print(json.dumps(result, ensure_ascii=False))
             except KeyError as e:
-                print(f"Error: Field '{field}' not found in JSON: {e}", file=sys.stderr)
+                print(f"Error: Key '{key}' not found in JSON: {e}", file=sys.stderr)
                 raise typer.Exit(1)
         
         # Write operation
@@ -104,26 +104,26 @@ def json_command(
                 # If not valid JSON, treat as string
                 parsed_value = value
             
-            # Update the field
+            # Update the key
             try:
-                # First try direct field update (for keys containing dots)
-                if '.' not in field or field in data:
-                    data[field] = parsed_value
+                # First try direct key update (for keys containing dots)
+                if '.' not in key or key in data:
+                    data[key] = parsed_value
                 else:
-                    # Navigate through nested fields using dot notation
-                    keys = field.split('.')
+                    # Navigate through nested keys using dot notation
+                    keys = key.split('.')
                     current = data
                     
-                    # Navigate to the parent of the target field
-                    for key in keys[:-1]:
-                        if key not in current:
-                            current[key] = {}
-                        elif not isinstance(current[key], dict):
-                            print(f"Error: Cannot navigate through non-dict field '{key}'", file=sys.stderr)
+                    # Navigate to the parent of the target key
+                    for k in keys[:-1]:
+                        if k not in current:
+                            current[k] = {}
+                        elif not isinstance(current[k], dict):
+                            print(f"Error: Cannot navigate through non-dict key '{k}'", file=sys.stderr)
                             raise typer.Exit(1)
-                        current = current[key]
+                        current = current[k]
                     
-                    # Set the final field
+                    # Set the final key
                     current[keys[-1]] = parsed_value
                 
                 # Write back to file
@@ -131,10 +131,10 @@ def json_command(
                     json.dump(data, f, indent=2, ensure_ascii=False)
                     f.write('\n')
                 
-                print(f"Successfully updated field '{field}' in '{file}'")
+                print(f"Successfully updated key '{key}' in '{file}'")
                 
             except Exception as e:
-                print(f"Error updating field '{field}': {e}", file=sys.stderr)
+                print(f"Error updating key '{key}': {e}", file=sys.stderr)
                 raise typer.Exit(1)
             
     except Exception as e:
