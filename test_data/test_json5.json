@@ -1,0 +1,15 @@
+{
+    "name": "test project",
+    "version": "1.0.0",
+    "config": {
+        "debug": true,
+        "paths": [
+            "./src",
+            "./lib"
+        ]
+    },
+    "features": {
+        "logging": false,
+        "monitoring": false
+    }
+}

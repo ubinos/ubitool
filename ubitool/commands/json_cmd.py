@@ -7,6 +7,7 @@ from typing import Optional
 
 import typer
 import jmespath
+import json5
 import re
 
 
@@ -143,10 +144,10 @@ def json_command(
     key: Optional[str] = typer.Option(None, "-k", "--key", help="Specify a key"),
     value: Optional[str] = typer.Option(None, "-v", "--value", help="Specify a value")
 ):
-    """Print or write json file.
+    """Print or write JSON5 file (supports comments and relaxed syntax).
     
     Args:
-        file: Path to the json target file
+        file: Path to the JSON5 target file
         read: Print the value of a specified key
         write: Write a value to a specified key
         key: Key to read or write (using JMESPath syntax)
@@ -180,9 +181,9 @@ def json_command(
             
             try:
                 with open(file_path, 'r', encoding='utf-8') as f:
-                    data = json.load(f)
-            except json.JSONDecodeError as e:
-                print(f"Error: Invalid JSON in file '{file}': {e}", file=sys.stderr)
+                    data = json5.load(f)
+            except json5.JSON5DecodeError as e:
+                print(f"Error: Invalid JSON5 in file '{file}': {e}", file=sys.stderr)
                 raise typer.Exit(1)
             except UnicodeDecodeError as e:
                 print(f"Error: Unable to decode file '{file}': {e}", file=sys.stderr)
@@ -251,8 +252,8 @@ def json_command(
             if file_path.exists():
                 try:
                     with open(file_path, 'r', encoding='utf-8') as f:
-                        data = json.load(f)
-                except json.JSONDecodeError:
+                        data = json5.load(f)
+                except (json5.JSON5DecodeError, json.JSONDecodeError):
                     data = {}
                 except UnicodeDecodeError as e:
                     print(f"Error: Unable to decode file '{file}': {e}", file=sys.stderr)
