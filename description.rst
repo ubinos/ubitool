@@ -17,7 +17,7 @@ ubitool은 ubinos를 위한 다목적 도구 모음입니다.
 .. code-block:: yaml
 
     type: python_app
-    main_file: ubitool/main.py
+    main_file: lib/ubitool/main.py
     tmux_session:
         debug:
             name: appcon2
@@ -48,6 +48,10 @@ ubitool은 ubinos를 위한 다목적 도구 모음입니다.
     .. code-block:: 
 
         'utf-8' codec can't decode byte 0xaa in position 9647738: invalid start byte
+
+* Command 별로 source file 을 분리해주세요.
+* 시험용 file 은 아래 디렉토리에 있는 것들을 사용해주세요. 없다면 여기에 만들어 주세요.
+    + lib/ubitool/test_data
 
 ---------------------------------------------------------------------------------------------
 설치 방법
