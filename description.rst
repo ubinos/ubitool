@@ -43,6 +43,7 @@ ubitool은 ubinos를 위한 다목적 도구 모음입니다.
 ---------------------------------------------------------------------------------------------
 
 * **Parameter 처리**: Typer 라이브러리 사용 (타입 힌트 기반 CLI 프레임워크)
+* **json command 구현**: jmespath 라이브러리 사용
 * **Debug 모드**: ipdb 라이브러리 사용 (대화형 Python 디버거)
 * 다음 오류가 발생하지 않게 작성해야 합니다.
     .. code-block:: 
@@ -131,16 +132,22 @@ json 명령어
 
     Examples:
         # Read the value of "C_Cpp.default.compileCommands" key
-        ubitool json -r -k "C_Cpp.default.compileCommands" .vscode/settings.test.json
+        ubitool json -r -k ".C_Cpp.default.compileCommands" .vscode/settings.json
 
         # Write "./compile_commands.json" to "C_Cpp.default.compileCommands" key
-        ubitool json -w -k "C_Cpp.default.compileCommands" -v "./compile_commands.json" .vscode/settings.test.json
+        ubitool json -w -k ".C_Cpp.default.compileCommands" -v "./compile_commands.json" .vscode/settings.json
 
         # Read the value of "git.detectSubmodulesLimit" key
-        ubitool json -r -k "git.detectSubmodulesLimit" .vscode/settings.test.json
+        ubitool json -r -k ".git.detectSubmodulesLimit" .vscode/settings.json
 
         # Write 120 to "git.detectSubmodulesLimit" key
-        ubitool json -w -k "git.detectSubmodulesLimit" -v 120 .vscode/settings.test.json
+        ubitool json -w -k ".git.detectSubmodulesLimit" -v 120 .vscode/settings.json
+
+        # Read the value of "configurations[?name=='target app debug'].cwd | [0]" key
+        ubitool json -r -k "configurations[?name=='target app debug'].cwd | [0]" .vscode/launch.json
+
+        # Write "" of "configurations[?name=='target app debug'].cwd | [0]" key
+        ubitool json -w -k "configurations[?name=='target app debug'].cwd | [0]" -v "build/pico_hi_world" .vscode/launch.json
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 tail 명령어
