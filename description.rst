@@ -281,6 +281,8 @@ stssend 명령어
         contains the expected string or the retry limit is reached.
 
         Output is get with the shtail command logic
+        
+        After send cancel key and before resend KEYS, output should be cleared with htail command logic.
 
     Arguments:
         KEYS  Keys to send.  [required]
@@ -299,14 +301,14 @@ stssend 명령어
                                     [default: 1]
         --timeout INTEGER           Timeout for each command execution in seconds.
                                     [default: 30]
-        -c, --cancel-key TEXT       Key sent before retry to cancel the previous one. It would not send on the first try.
+        -c, --cancel-key TEXT       Key sent before every retry to cancel the previous one.
 
     Examples:
         ubitool stssend -t build1 -o ~/Workspace/ubinos/ubiworks/log/tmux -e "ready" "systemctl status myservice" Enter
         ubitool stssend -t build1 -o ~/Workspace/ubinos/ubiworks/log/tmux -e "connected" -r 20 "ping -c 1 server.com" Enter
         ubitool stssend -t build1 -o ~/Workspace/ubinos/ubiworks/log/tmux -e "active" --timeout 5 "systemctl is-active myservice" Enter
         ubitool stssend -t build1 -o ~/Workspace/ubinos/ubiworks/log/tmux -e "ready" --retry-interval 5 "systemctl status myservice" Enter
-        ubitool stssend -t build1 -o ~/Workspace/ubinos/ubiworks_cmake/log/tmux --expect "$ " --timeout 60 -c "C-c" -c "q" -c "Enter" -c "y" -c "Enter" "make load" Enter
+        ubitool stssend -t build1 -o ~/Workspace/ubinos/ubiworks_cmake/log/tmux --expect "$ " --timeout 30 -c C-c -c "q" -c Enter -c "y" -c "Enter" "make load" Enter
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 shell 명령어
