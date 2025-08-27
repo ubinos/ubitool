@@ -292,19 +292,21 @@ stssend 명령어
                                     Finds and reads the latest log file matching the pattern:
                                     PATH/session_<target-session>_window_0_pane_0_*.log
                                     [default: ~/Workspace/log/tmux]
-        --expect TEXT               Expected string in the output.  [required]
-        --retry INTEGER             Maximum number of retries.
+        -e, --expect TEXT           Expected string in the output.  [required]
+        -r, --retry INTEGER         Maximum number of retries.
                                     [default: 10]
         --retry-interval INTEGER    Interval between retries in seconds.
                                     [default: 1]
         --timeout INTEGER           Timeout for each command execution in seconds.
                                     [default: 30]
+        -c, --cancel-key TEXT       Key sent before retry to cancel the previous one. It would not send on the first try.
 
     Examples:
-        ubitool stssend -t build1 -o ~/Workspace/ubinos/ubiworks/log/tmux --expect "ready" "systemctl status myservice" Enter
-        ubitool stssend -t build1 -o ~/Workspace/ubinos/ubiworks/log/tmux --expect "connected" --retry 20 "ping -c 1 server.com" Enter
-        ubitool stssend -t build1 -o ~/Workspace/ubinos/ubiworks/log/tmux --expect "active" --timeout 5 "systemctl is-active myservice" Enter
-        ubitool stssend -t build1 -o ~/Workspace/ubinos/ubiworks/log/tmux --expect "ready" --retry-interval 5 "systemctl status myservice" Enter
+        ubitool stssend -t build1 -o ~/Workspace/ubinos/ubiworks/log/tmux -e "ready" "systemctl status myservice" Enter
+        ubitool stssend -t build1 -o ~/Workspace/ubinos/ubiworks/log/tmux -e "connected" -r 20 "ping -c 1 server.com" Enter
+        ubitool stssend -t build1 -o ~/Workspace/ubinos/ubiworks/log/tmux -e "active" --timeout 5 "systemctl is-active myservice" Enter
+        ubitool stssend -t build1 -o ~/Workspace/ubinos/ubiworks/log/tmux -e "ready" --retry-interval 5 "systemctl status myservice" Enter
+        ubitool stssend -t build1 -o ~/Workspace/ubinos/ubiworks_cmake/log/tmux --expect "$ " --timeout 60 -c "C-c" -c "q" -c "Enter" -c "y" -c "Enter" "make load" Enter
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 shell 명령어
