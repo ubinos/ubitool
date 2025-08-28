@@ -308,7 +308,7 @@ stssend 명령어
         ubitool stssend -t build1 -o ~/Workspace/ubinos/ubiworks/log/tmux -e "connected" -r 20 "ping -c 1 server.com" Enter
         ubitool stssend -t build1 -o ~/Workspace/ubinos/ubiworks/log/tmux -e "active" --timeout 5 "systemctl is-active myservice" Enter
         ubitool stssend -t build1 -o ~/Workspace/ubinos/ubiworks/log/tmux -e "ready" --retry-interval 5 "systemctl status myservice" Enter
-        ubitool stssend -t build1 -o ~/Workspace/ubinos/ubiworks_cmake/log/tmux --expect "$ " --timeout 30 -c C-c -c "q" -c Enter -c "y" -c "Enter" "make load" Enter
+        ubitool stssend -t build1 -o ~/Workspace/ubinos/ubiworks_cmake/log/tmux --expect "$ " --timeout 30 -c C-c -c "q" -c Enter -c "y" -c Enter "make load" Enter
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 shell 명령어
