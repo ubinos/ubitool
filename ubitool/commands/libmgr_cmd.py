@@ -27,6 +27,9 @@ from ttkwidgets import CheckboxTreeview
 
 from collections import Counter
 
+import typer
+from typing import Annotated
+
 debug_level = 0
 
 true_string = "O"
@@ -1073,3 +1076,18 @@ if __name__ == "__main__":
 
     # csel = libmgr("..", "library")
     # csel.mainloop()
+
+def libmgr_command(
+    base_path: Annotated[str, typer.Option("-b", "--base-path", help="Base path")] = ".",
+    lib_path: Annotated[str, typer.Option("-l", "--lib-path", help="Library relative path")] = "lib",
+    list_file: Annotated[str, typer.Option("-f", "--list-file", help="Library list file relative path")] = "liblist.json"
+):
+    """Launch library manager."""
+    import os
+    
+    # Convert relative paths to absolute paths
+    base_path = os.path.abspath(base_path)
+    
+    # Launch the GUI application
+    app = libmgr(base_path, lib_path, list_file)
+    app.mainloop()
