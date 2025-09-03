@@ -15,6 +15,7 @@ from .commands.ls_cmd import ls_command
 from .commands.sort_cmd import sort_command
 from .commands.json_cmd import json_command
 from .commands.libmgr_cmd import libmgr_command
+from .commands.configsel_cmd import configsel_command
 
 __version__ = "1.0.0"
 
@@ -59,6 +60,7 @@ app.command(name="ls")(ls_command)
 app.command(name="sort")(sort_command)
 app.command(name="json")(json_command)
 app.command(name="libmgr")(libmgr_command)
+app.command(name="configsel")(configsel_command)
 
 
 if __name__ == "__main__":

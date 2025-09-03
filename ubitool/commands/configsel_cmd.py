@@ -21,10 +21,13 @@ from tkinter import ttk
 from tkinter import Toplevel
 from tkinter import messagebox
 
+import typer
+from typing import Annotated
+
 debug_level = 1
 
 config_file_exts = (".cmake", ".mk", ".config")
-config_file_names = ("CMakeLists.txt")
+config_file_names = ("CMakeLists.txt",)
 config_dir_names = ["app", "config"]
 
 # config_name_base
@@ -195,19 +198,19 @@ class copy_dialog(tk.Toplevel):
 class confsel(tk.Tk):
     config_info_keyword = "ubinos_config_info {"
     cmake_inclucde_file_keyword = "include(${CMAKE_CURRENT_LIST_DIR}/"
-    prj_dir_base = ".."
-    lib_rel_dir = "lib"
-    make_file_name = "Makefile"
+    base_path = ".."
+    lib_path = "lib"
+    config_cmake_file_name = "config.cmake"
 
     config_items = []
     config_item_idx = 0
     config_item_len = 0
 
-    def __init__(self, prj_dir_base, lib_rel_dir):
+    def __init__(self, base_path, lib_path):
         super().__init__()
 
-        self.prj_dir_base = prj_dir_base
-        self.lib_rel_dir = lib_rel_dir
+        self.base_path = base_path
+        self.lib_path = lib_path
 
         if debug_level >= 1:
             print("Ubinos config selector")
@@ -258,7 +261,7 @@ class confsel(tk.Tk):
         self.tv.column(4, width=280)
 
         self.update_config_items()
-        config_dir, config_name = self.get_config_from_makefile(self.make_file_name)
+        config_dir, config_name = self.get_config_from_config_cmake(self.config_cmake_file_name)
         for conf in self.config_items:
             self.tv.insert(parent='', index=conf["index"], iid=conf["index"], values=(conf["index"], conf["project"], conf["name"], conf["dir"]))
             if config_dir == conf["dir"] and config_name == conf["name"]:
@@ -270,7 +273,7 @@ class confsel(tk.Tk):
     def update_config_items(self):
         index = 0
         prjs = [{"name": ".", "dir": ".."}]
-        lib_dir = os.path.join(self.prj_dir_base, self.lib_rel_dir)
+        lib_dir = os.path.join(self.base_path, self.lib_path)
 
         if os.path.exists(lib_dir):
             for file_name in sorted(os.listdir(lib_dir)):
@@ -280,21 +283,27 @@ class confsel(tk.Tk):
 
         for prj in prjs:
             config_dirs = []
-            for config_dir_name in self.config_dir_names:
+            for config_dir_name in config_dir_names:
                 config_dir = pathlib.Path(os.path.join(prj["dir"], config_dir_name)).as_posix()
                 if os.path.exists(config_dir) and os.path.isdir(config_dir):
                     config_dirs.append(config_dir)
 
             for config_dir in config_dirs:
-                config_file_names = [file_name for file_name in sorted(os.listdir(config_dir)) if os.path.isfile(os.path.join(config_dir, file_name)) and file_name.endswith(config_file_exts)]
-                if debug_level >= 3:
-                    print(config_file_names)
-
-                for config_file_name in config_file_names:
-                    config_info = self.load_config_info(os.path.join(config_dir, config_file_name))
-                    if config_info is not None and "build_type" in config_info:
-                        config_name = os.path.splitext(config_file_name)[0]
-                        self.config_items.append({"index": index, "project": prj["name"], "name": config_name, "dir": config_dir, "file_name": config_file_name})
+                # Check subdirectories for config_file_names
+                subdirs = [d for d in sorted(os.listdir(config_dir)) if os.path.isdir(os.path.join(config_dir, d))]
+                for subdir in subdirs:
+                    subdir_path = os.path.join(config_dir, subdir)
+                    # Check if any of config_file_names exists in this subdirectory
+                    has_config_file = False
+                    for config_file_name in config_file_names:
+                        if os.path.exists(os.path.join(subdir_path, config_file_name)):
+                            has_config_file = True
+                            break
+                    
+                    if has_config_file:
+                        # This subdirectory is a config
+                        config_name = subdir
+                        self.config_items.append({"index": index, "project": prj["name"], "name": config_name, "dir": config_dir, "file_name": config_name})
                         index += 1
 
         self.config_len = index
@@ -355,106 +364,79 @@ class confsel(tk.Tk):
 
         return dst_config_info
 
-    def create_makefile(self, make_file_path, config_dir, config_name):
-        file = file_open(make_file_path, 'w+')
-        file.write("CONFIG_DIR ?= %s\n" % config_dir)
-        file.write("CONFIG_NAME ?= %s\n" % config_name)
-        file.write("\n")
-        file.write("include makefile.mk\n")
+    def create_config_cmake(self, config_cmake_path, config_dir, config_name):
+        file = file_open(config_cmake_path, 'w+')
+        file.write("set(UBI_CONFIG_DIR %s)\n" % config_dir)
+        file.write("set(UBI_CONFIG_NAME %s)\n" % config_name)
         file.write("\n")
         file.close()
 
-    def get_config_from_makefile(self, make_file_path):
+    def get_config_from_config_cmake(self, config_cmake_path):
         config_dir = ""
         config_name = ""
 
-        with file_open(make_file_path, 'r') as file:
-            lines = file.readlines()
-            file.close()
-            for line in lines:
-                keyword = "CONFIG_DIR"
-                if config_dir == "" and line.startswith(keyword):
-                    k_len = len(keyword)
-                    k_idx = k_len
-                    keyword = "="
-                    k_idx = line[k_idx:].find(keyword)
-                    if k_idx > -1:
-                        k_idx += k_len + len(keyword)
-                        config_dir = line[k_idx:].strip()
-
-                keyword = "CONFIG_NAME"
-                if config_name == "" and line.startswith(keyword):
-                    k_len = len(keyword)
-                    k_idx = k_len
-                    keyword = "="
-                    k_idx = line[k_idx:].find(keyword)
-                    if k_idx > -1:
-                        k_idx += k_len + len(keyword)
-                        config_name = line[k_idx:].strip()
+        if os.path.exists(config_cmake_path):
+            with file_open(config_cmake_path, 'r') as file:
+                lines = file.readlines()
+                file.close()
+                for line in lines:
+                    # Parse set(UBI_CONFIG_DIR ...)
+                    if "set(UBI_CONFIG_DIR" in line:
+                        start = line.find("set(UBI_CONFIG_DIR") + len("set(UBI_CONFIG_DIR")
+                        end = line.find(")", start)
+                        if start > -1 and end > -1:
+                            config_dir = line[start:end].strip()
+                    
+                    # Parse set(UBI_CONFIG_NAME ...)
+                    if "set(UBI_CONFIG_NAME" in line:
+                        start = line.find("set(UBI_CONFIG_NAME") + len("set(UBI_CONFIG_NAME")
+                        end = line.find(")", start)
+                        if start > -1 and end > -1:
+                            config_name = line[start:end].strip()
 
         return config_dir, config_name
 
-    def select_config(self, make_file_path, config_dir, config_name):
-        if not os.path.exists(make_file_path):
-            self.create_makefile(make_file_path, config_dir, config_name)
+    def select_config(self, config_cmake_path, config_dir, config_name):
+        if not os.path.exists(config_cmake_path):
+            self.create_config_cmake(config_cmake_path, config_dir, config_name)
 
-        elif not os.path.isdir(make_file_path):
-            file = file_open(make_file_path, 'r')
+        elif not os.path.isdir(config_cmake_path):
+            file = file_open(config_cmake_path, 'r')
             file.seek(0, io.SEEK_END)
             file_len = file.tell()
             file.close()
 
             if file_len <= 0:
-                self.create_makefile(make_file_path, config_dir, config_name)
+                self.create_config_cmake(config_cmake_path, config_dir, config_name)
 
             else:
-                shutil.copyfile(make_file_path, make_file_path + ".bak")
+                shutil.copyfile(config_cmake_path, config_cmake_path + ".bak")
 
                 need_config_dir = True
                 need_config_name = True
 
-                file = file_open(make_file_path, 'r')
+                file = file_open(config_cmake_path, 'r')
                 lines = file.readlines()
                 file.close()
-                file = file_open(make_file_path, 'w+')
+                file = file_open(config_cmake_path, 'w+')
                 for line in lines:
-                    if line.startswith("CONFIG_DIR "):
-                        file.write("CONFIG_DIR ?= %s\n" % config_dir)
+                    if "set(UBI_CONFIG_DIR" in line:
+                        file.write("set(UBI_CONFIG_DIR %s)\n" % config_dir)
                         need_config_dir = False
-                    elif line.startswith("CONFIG_NAME "):
-                        file.write("CONFIG_NAME ?= %s\n" % config_name)
+                    elif "set(UBI_CONFIG_NAME" in line:
+                        file.write("set(UBI_CONFIG_NAME %s)\n" % config_name)
                         need_config_name = False
                     else:
                         file.write(line)
                 file.close()
 
-                if need_config_dir:
-                    file = file_open(make_file_path, 'r')
-                    lines = file.readlines()
-                    file.close()
-                    file = file_open(make_file_path, 'w+')
-                    for line in lines:
-                        if need_config_dir and line.startswith("include makefile.mk"):
-                            file.write("CONFIG_DIR ?= %s\n" % config_dir)
-                            file.write("\n")
-                            file.write("include makefile.mk\n")
-                            need_config_dir = False
-                        else:
-                            file.write(line)
-                    file.close()
-                if need_config_name:
-                    file = file_open(make_file_path, 'r')
-                    lines = file.readlines()
-                    file.close()
-                    file = file_open(make_file_path, 'w+')
-                    for line in lines:
-                        if need_config_name and line.startswith("include makefile.mk"):
-                            file.write("CONFIG_NAME ?= %s\n" % config_name)
-                            file.write("\n")
-                            file.write("include makefile.mk\n")
-                            need_config_name = False
-                        else:
-                            file.write(line)
+                # If CONFIG_DIR or CONFIG_NAME not found, append them
+                if need_config_dir or need_config_name:
+                    file = file_open(config_cmake_path, 'a')
+                    if need_config_dir:
+                        file.write("set(UBI_CONFIG_DIR %s)\n" % config_dir)
+                    if need_config_name:
+                        file.write("set(UBI_CONFIG_NAME %s)\n" % config_name)
                     file.close()
 
     def get_clone_params(self, src_config_dir, src_config_file_name, dst_config_dir, dst_config_name_base):
@@ -583,7 +565,7 @@ class confsel(tk.Tk):
 
                     file.close()
 
-            self.select_config(make_file_path, dst_config_dir, dst_config_name)
+            self.select_config(self.config_cmake_file_name, dst_config_dir, dst_config_name)
 
             return True, ("%s cloned %s has been created successfully." % (dst_config_name, os.path.splitext(src_config_file_name)[0]))
 
@@ -630,7 +612,7 @@ class confsel(tk.Tk):
                 self.print_selection()
 
             selection = self.config_items[self.config_item_idx]
-            self.select_config(self.make_file_name, selection["dir"], selection["name"])
+            self.select_config(self.config_cmake_file_name, selection["dir"], selection["name"])
 
         self.quit()
 
@@ -648,7 +630,7 @@ class confsel(tk.Tk):
         self.deiconify()
 
     def press_copy_dialog_ok(self):
-        result, message = self.copy_config(self.make_file_name, self.copy_dialog.src_config_dir, self.copy_dialog.src_config_file_name, self.copy_dialog.dst_config_dir, self.copy_dialog.dst_config_name_base)
+        result, message = self.copy_config(self.config_cmake_file_name, self.copy_dialog.src_config_dir, self.copy_dialog.src_config_file_name, self.copy_dialog.dst_config_dir, self.copy_dialog.dst_config_name_base)
         if result:
             messagebox.showinfo(
                 title='Copy result',
@@ -676,3 +658,17 @@ if __name__ == '__main__':
 
     # cs = confsel(".", "lib")
     # cs.mainloop()
+
+def configsel_command(
+    base_path: Annotated[str, typer.Option("-b", "--base-path", help="Base path")] = ".",
+    lib_path: Annotated[str, typer.Option("-l", "--lib-path", help="Library relative path")] = "lib"
+):
+    """Launch config selector."""
+    import os
+    
+    # Convert relative paths to absolute paths
+    base_path = os.path.abspath(base_path)
+    
+    # Launch the GUI application
+    app = confsel(base_path, lib_path)
+    app.mainloop()
