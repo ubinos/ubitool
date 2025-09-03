@@ -122,11 +122,13 @@ libmgr 명령어
         Laungh library manager.
 
     Options:
-        -h, --help           Show this message and exit.
-        -p, --lib-path TEXT  Library path
-                             [default: lib]
-        -l, --list           Library list file
-                             [default: liblist.json]
+        -h, --help              Show this message and exit.
+        -b, --base-path TEXT    Base path
+                                [default: .]
+        -l, --lib-path TEXT     Library relative path
+                                [default: lib]
+        -f, --list-file TEXT    Library list file relative path
+                                [default: liblist.json]
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 json 명령어
