@@ -110,6 +110,7 @@ ubitool은 pip를 통해 설치할 수 있습니다:
         sort            Sort lines of text file or stdin input.
         json            Read or write json file.
         libmgr          Launch library manager
+        configsel       Launch config selector
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 libmgr 명령어

@@ -1071,11 +1071,11 @@ if __name__ == "__main__":
         lib_path = sys.argv[2]
         list_file = sys.argv[3]
 
-        csel = libmgr(base_path, lib_path, list_file)
-        csel.mainloop()
+        lm = libmgr(base_path, lib_path, list_file)
+        lm.mainloop()
 
-    # csel = libmgr("..", "library")
-    # csel.mainloop()
+    # lm = libmgr(".", "lib")
+    # lm.mainloop()
 
 def libmgr_command(
     base_path: Annotated[str, typer.Option("-b", "--base-path", help="Base path")] = ".",

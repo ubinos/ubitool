@@ -667,15 +667,11 @@ if __name__ == '__main__':
     if 3 > len(sys.argv):
         print_help()
     else:
-        if sys.argv[1] == "--lib-absolute" and 4 <= len(sys.argv):
-            prj_dir_base = sys.argv[2]
-            lib_rel_dir = os.path.relpath(sys.argv[3], os.path.abspath(prj_dir_base))
-        else:
-            prj_dir_base = sys.argv[1]
-            lib_rel_dir = sys.argv[2]
+        base_path = sys.argv[1]
+        lib_path = sys.argv[2]
 
-        csel = confsel(prj_dir_base, lib_rel_dir)
-        csel.mainloop()
+        cs = confsel(base_path, lib_path)
+        cs.mainloop()
 
-    # csel = confsel("..", "library")
-    # csel.mainloop()
+    # cs = confsel(".", "lib")
+    # cs.mainloop()
