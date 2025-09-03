@@ -24,6 +24,8 @@ from tkinter import messagebox
 debug_level = 1
 
 config_file_exts = (".cmake", ".mk", ".config")
+config_file_names = ("CMakeLists.txt")
+config_dir_names = ["app", "config"]
 
 # config_name_base
 # config_name_variation
@@ -46,7 +48,7 @@ win_y_offset = 0
 def print_help():
     print("===============================================================================")
     print("Usage:")
-    print("    python %s <project base dir> <library relative dir>" % (sys.argv[0]))
+    print("    python %s <base path> <library relative path>" % (sys.argv[0]))
     print("===============================================================================")
 
 def set_geometry_center(win, width, height):
@@ -193,9 +195,8 @@ class copy_dialog(tk.Toplevel):
 class confsel(tk.Tk):
     config_info_keyword = "ubinos_config_info {"
     cmake_inclucde_file_keyword = "include(${CMAKE_CURRENT_LIST_DIR}/"
-    config_dir_names = ["app", "doc", "env", "config"]
     prj_dir_base = ".."
-    lib_rel_dir = "library"
+    lib_rel_dir = "lib"
     make_file_name = "Makefile"
 
     config_items = []
@@ -210,8 +211,8 @@ class confsel(tk.Tk):
 
         if debug_level >= 1:
             print("Ubinos config selector")
-            print("    base dir : %s" % self.prj_dir_base)
-            print("    library dir : %s" % self.lib_rel_dir)
+            print("    base path : %s" % self.base_path)
+            print("    library dir : %s" % self.lib_path)
             print("")
 
         self.title('Ubinos config selector')
