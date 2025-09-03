@@ -113,6 +113,23 @@ ubitool은 pip를 통해 설치할 수 있습니다:
         configsel       Launch config selector
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+configsel 명령어
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. code-block:: bash
+
+    Usage: ubitool configsel [OPTIONS]
+
+        Laungh config selector.
+
+    Options:
+        -h, --help              Show this message and exit.
+        -b, --base-path TEXT    Base path
+                                [default: .]
+        -l, --lib-path TEXT     Library relative path
+                                [default: lib]
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 libmgr 명령어
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
