@@ -109,6 +109,24 @@ ubitool은 pip를 통해 설치할 수 있습니다:
         ls              List directory contents or files matching patterns.
         sort            Sort lines of text file or stdin input.
         json            Read or write json file.
+        libmgr          Launch library manager
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+libmgr 명령어
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. code-block:: bash
+
+    Usage: ubitool libmgr [OPTIONS]
+
+        Laungh library manager.
+
+    Options:
+        -h, --help           Show this message and exit.
+        -p, --lib-path TEXT  Library path
+                             [default: lib]
+        -l, --list           Library list file
+                             [default: liblist.json]
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 json 명령어
