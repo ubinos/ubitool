@@ -24,19 +24,7 @@ from tkinter import messagebox
 import typer
 from typing import Annotated
 
-debug_level = 1
-
-config_file_exts = (".cmake", ".mk", ".config")
-config_file_names = ("CMakeLists.txt",)
-config_dir_names = ["app", "config"]
-
-# config_name_base
-# config_name_variation
-# config_name = <config_name_base>__<config_name_variation>
-# config_extension
-# config_file_name = <config_name>.<config_extension>
-# config_dir
-# config_file_path = <config_dir>/<config_file_name>
+debug_level = 3
 
 win_width = 1000
 win_height = 700
@@ -196,26 +184,27 @@ class copy_dialog(tk.Toplevel):
             self.tvr.insert(parent='', index=idx, iid=idx, values=(file_path))
 
 class confsel(tk.Tk):
-    config_info_keyword = "ubinos_config_info {"
-    cmake_inclucde_file_keyword = "include(${CMAKE_CURRENT_LIST_DIR}/"
-    base_path = ".."
-    lib_path = "lib"
-    config_cmake_file_name = "config.cmake"
 
-    config_items = []
-    config_item_idx = 0
-    config_item_len = 0
-
-    def __init__(self, base_path, lib_path):
+    def __init__(self, base_path, lib_rel_path):
         super().__init__()
 
+        if debug_level >= 2:
+            print("pwd: %s" % os.getcwd())
+
         self.base_path = base_path
-        self.lib_path = lib_path
+        self.lib_rel_path = lib_rel_path
+        self.config_dir_names = ["app", "config"]
+        self.config_file_names = ["CMakeLists.txt"]
+        self.config_cmake_file_name = "config.cmake"
+
+        self.config_items = []
+        self.config_item_idx = 0
+        self.config_item_len = 0
 
         if debug_level >= 1:
             print("Ubinos config selector")
             print("    base path : %s" % self.base_path)
-            print("    library dir : %s" % self.lib_path)
+            print("    library relative path : %s" % self.lib_rel_path)
             print("")
 
         self.title('Ubinos config selector')
@@ -261,10 +250,18 @@ class confsel(tk.Tk):
         self.tv.column(4, width=280)
 
         self.update_config_items()
-        config_dir, config_name = self.get_config_from_config_cmake(self.config_cmake_file_name)
+        config_cmake_path = os.path.join(self.base_path, self.config_cmake_file_name)
+        config_dir, config_name = self.get_config_from_config_cmake(config_cmake_path)
+        if debug_level > 2:
+            print("config_cmake_path = %s" % (config_cmake_path))
+            print("config_dir = %s, config_name = %s" % (config_dir, config_name))
         for conf in self.config_items:
             self.tv.insert(parent='', index=conf["index"], iid=conf["index"], values=(conf["index"], conf["project"], conf["name"], conf["dir"]))
-            if config_dir == conf["dir"] and config_name == conf["name"]:
+            item_config_dir = ("\"%s\"" % os.path.join("${CMAKE_CURRENT_LIST_DIR}", conf["dir"]))
+            item_config_name = conf["name"]
+            if debug_level > 2:
+                print("item_config_dir = %s, item_config_name = %s" % (item_config_dir, item_config_name))
+            if config_dir == item_config_dir and config_name == item_config_name:
                 self.config_item_idx = conf["index"]
 
         self.tv.selection_set(self.config_item_idx)
@@ -272,8 +269,8 @@ class confsel(tk.Tk):
 
     def update_config_items(self):
         index = 0
-        prjs = [{"name": ".", "dir": ".."}]
-        lib_dir = os.path.join(self.base_path, self.lib_path)
+        prjs = [{"name": ".", "dir": self.base_path}]
+        lib_dir = os.path.join(self.base_path, self.lib_rel_path)
 
         if os.path.exists(lib_dir):
             for file_name in sorted(os.listdir(lib_dir)):
@@ -281,12 +278,22 @@ class confsel(tk.Tk):
                 if os.path.isdir(prj_dir):
                     prjs += [{"name": file_name, "dir": prj_dir}]
 
+        if debug_level > 2:
+            print(lib_dir)
+            print(prjs)
+            print("")
+
         for prj in prjs:
             config_dirs = []
-            for config_dir_name in config_dir_names:
+            for config_dir_name in self.config_dir_names:
                 config_dir = pathlib.Path(os.path.join(prj["dir"], config_dir_name)).as_posix()
                 if os.path.exists(config_dir) and os.path.isdir(config_dir):
                     config_dirs.append(config_dir)
+
+            if debug_level > 2:
+                print("")
+                print(config_dirs)
+                print("")
 
             for config_dir in config_dirs:
                 # Check subdirectories for config_file_names
@@ -295,7 +302,7 @@ class confsel(tk.Tk):
                     subdir_path = os.path.join(config_dir, subdir)
                     # Check if any of config_file_names exists in this subdirectory
                     has_config_file = False
-                    for config_file_name in config_file_names:
+                    for config_file_name in self.config_file_names:
                         if os.path.exists(os.path.join(subdir_path, config_file_name)):
                             has_config_file = True
                             break
@@ -421,7 +428,7 @@ class confsel(tk.Tk):
                 file = file_open(config_cmake_path, 'w+')
                 for line in lines:
                     if "set(UBI_CONFIG_DIR" in line:
-                        file.write("set(UBI_CONFIG_DIR %s)\n" % config_dir)
+                        file.write("set(UBI_CONFIG_DIR \"${CMAKE_CURRENT_LIST_DIR}/%s\")\n" % config_dir)
                         need_config_dir = False
                     elif "set(UBI_CONFIG_NAME" in line:
                         file.write("set(UBI_CONFIG_NAME %s)\n" % config_name)
@@ -648,20 +655,19 @@ class confsel(tk.Tk):
 
 if __name__ == '__main__':
     if 3 > len(sys.argv):
-        print_help()
+        # print_help()
+        base_path = "."
+        lib_rel_path = "lib"
     else:
         base_path = sys.argv[1]
-        lib_path = sys.argv[2]
+        lib_rel_path = sys.argv[2]
 
-        cs = confsel(base_path, lib_path)
-        cs.mainloop()
-
-    # cs = confsel(".", "lib")
-    # cs.mainloop()
+    cs = confsel(base_path, lib_rel_path)
+    cs.mainloop()
 
 def configsel_command(
     base_path: Annotated[str, typer.Option("-b", "--base-path", help="Base path")] = ".",
-    lib_path: Annotated[str, typer.Option("-l", "--lib-path", help="Library relative path")] = "lib"
+    lib_rel_path: Annotated[str, typer.Option("-l", "--lib-path", help="Library relative path")] = "lib"
 ):
     """Launch config selector."""
     import os
@@ -670,5 +676,5 @@ def configsel_command(
     base_path = os.path.abspath(base_path)
     
     # Launch the GUI application
-    app = confsel(base_path, lib_path)
+    app = confsel(base_path, lib_rel_path)
     app.mainloop()

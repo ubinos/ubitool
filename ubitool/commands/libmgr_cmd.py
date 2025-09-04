@@ -30,7 +30,7 @@ from collections import Counter
 import typer
 from typing import Annotated
 
-debug_level = 0
+debug_level = 3
 
 true_string = "O"
 false_string = "X"
@@ -207,11 +207,14 @@ class run_dialog(tk.Toplevel):
         self.update_buttons()
 
 class libmgr(tk.Tk):
-    def __init__(self, base_path, lib_path, list_file):
+    def __init__(self, base_path, lib_rel_path, list_file):
         super().__init__()
 
+        if debug_level >= 2:
+            print("pwd: %s" % os.getcwd())
+
         self.base_path = base_path
-        self.lib_path = lib_path
+        self.lib_rel_path = lib_rel_path
         self.lib_list_custom_file_name = list_file
         self.lib_list_custom_file_rel_dir = base_path
         self.lib_list_default_file_name = "liblist_default.json"
@@ -230,8 +233,8 @@ class libmgr(tk.Tk):
         if debug_level >= 1:
             print("Ubinos library manager")
             print("    base path : %s" % self.base_path)
-            print("    library dir : %s" % self.lib_path)
-            print("    list file : %s" % self.list_file)
+            print("    library relative path : %s" % self.lib_rel_path)
+            print("    list file : %s" % self.lib_list_custom_file_name)
             print("")
 
         self.title("Ubinos library manager")
@@ -566,7 +569,7 @@ class libmgr(tk.Tk):
         return lib_list
 
     def get_exist_lib_list(self):
-        lib_dir = os.path.join(self.base_path, self.lib_path)
+        lib_dir = os.path.join(self.base_path, self.lib_rel_path)
         exist_lib_list = []
         for name in os.listdir(lib_dir):
             if os.path.isdir(os.path.join(lib_dir, name)):
@@ -690,7 +693,7 @@ class libmgr(tk.Tk):
 
             checked_items_indexs = self.tv.get_checked()
             if len(checked_items_indexs) > 0:
-                lib_dir = os.path.join(self.base_path, self.lib_path)
+                lib_dir = os.path.join(self.base_path, self.lib_rel_path)
                 self.run_command_type = "install"
                 self.git_commands = []
                 for index in checked_items_indexs:
@@ -740,13 +743,13 @@ class libmgr(tk.Tk):
 
             checked_items_indexs = self.tv.get_checked()
             if len(checked_items_indexs) > 0:
-                lib_dir = os.path.join(self.base_path, self.lib_path)
+                lib_dir = os.path.join(self.base_path, self.lib_rel_path)
                 self.run_command_type = "uninstall"
                 self.git_commands = []
                 for index in checked_items_indexs:
                     selection = self.lib_items[int(index)]
                     target_dir = os.path.join(lib_dir, selection["name"])
-                    dot_git_dir = os.path.join(self.base_path, ".git", "modules", self.lib_path, selection["name"])
+                    dot_git_dir = os.path.join(self.base_path, ".git", "modules", self.lib_rel_path, selection["name"])
                     if  self.is_git_repo(selection["name"]):
                         self.git_commands.append(f"git submodule deinit -f {target_dir}")
                         self.git_commands.append(self.get_platform_rmdir_command(dot_git_dir))
@@ -774,7 +777,7 @@ class libmgr(tk.Tk):
 
             checked_items_indexs = self.tv.get_checked()
             if len(checked_items_indexs) > 0:
-                lib_dir = os.path.join(self.base_path, self.lib_path)
+                lib_dir = os.path.join(self.base_path, self.lib_rel_path)
                 self.run_command_type = "switch"
                 self.git_commands = []
                 for index in checked_items_indexs:
@@ -805,7 +808,7 @@ class libmgr(tk.Tk):
 
             checked_items_indexs = self.tv.get_checked()
             if len(checked_items_indexs) > 0:
-                lib_dir = os.path.join(self.base_path, self.lib_path)
+                lib_dir = os.path.join(self.base_path, self.lib_rel_path)
                 self.run_command_type = "reset"
                 self.git_commands = []
                 for index in checked_items_indexs:
@@ -858,7 +861,7 @@ class libmgr(tk.Tk):
 
             checked_items_indexs = self.tv.get_checked()
             if len(checked_items_indexs) > 0:
-                lib_dir = os.path.join(self.base_path, self.lib_path)
+                lib_dir = os.path.join(self.base_path, self.lib_rel_path)
                 self.run_command_type = "update"
                 self.git_commands = []
                 for index in checked_items_indexs:
@@ -946,7 +949,7 @@ class libmgr(tk.Tk):
         return result
 
     def is_git_repo(self, name):
-        lib_dir = os.path.join(self.base_path, self.lib_path)
+        lib_dir = os.path.join(self.base_path, self.lib_rel_path)
         target_dir = os.path.join(lib_dir, name)
         if os.path.exists(os.path.join(target_dir, ".git")):
             return True
@@ -955,7 +958,7 @@ class libmgr(tk.Tk):
 
 
     def git_checkout_branch(self, name, branch):
-        lib_dir = os.path.join(self.base_path, self.lib_path)
+        lib_dir = os.path.join(self.base_path, self.lib_rel_path)
         target_dir = os.path.join(lib_dir, name)
         if self.is_git_repo(name):
             git_command = ["git", "checkout", "-f", branch]
@@ -968,7 +971,7 @@ class libmgr(tk.Tk):
         return False
 
     def git_check_updatable(self, name):
-        lib_dir = os.path.join(self.base_path, self.lib_path)
+        lib_dir = os.path.join(self.base_path, self.lib_rel_path)
         target_dir = os.path.join(lib_dir, name)
         if self.is_git_repo(name):
             git_command = ["git", "fetch"]
@@ -991,7 +994,7 @@ class libmgr(tk.Tk):
                 return False
 
     def git_check_modified(self, name):
-        lib_dir = os.path.join(self.base_path, self.lib_path)
+        lib_dir = os.path.join(self.base_path, self.lib_rel_path)
         target_dir = os.path.join(lib_dir, name)
         if self.is_git_repo(name):
             git_command = ["git", "status", "--porcelain"]
@@ -1005,7 +1008,7 @@ class libmgr(tk.Tk):
         return unknown_string
 
     def git_local_branch_tag_commit(self, name):
-        lib_dir = os.path.join(self.base_path, self.lib_path)
+        lib_dir = os.path.join(self.base_path, self.lib_rel_path)
         target_dir = os.path.join(lib_dir, name)
         branch = ""
         tags = []
@@ -1040,7 +1043,7 @@ class libmgr(tk.Tk):
         return branch, tags, commit
 
     def git_local_url(self, name):
-        lib_dir = os.path.join(self.base_path, self.lib_path)
+        lib_dir = os.path.join(self.base_path, self.lib_rel_path)
         target_dir = os.path.join(lib_dir, name)
         url = unknown_string
         upstreams = []
@@ -1064,22 +1067,22 @@ class libmgr(tk.Tk):
         return url, upstreams
 
 if __name__ == "__main__":
-    if 3 > len(sys.argv):
-        print_help()
+    if 4 > len(sys.argv):
+        # print_help()
+        base_path = "."
+        lib_rel_path = "lib"
+        list_file = "liblist.json"
     else:
         base_path = sys.argv[1]
-        lib_path = sys.argv[2]
+        lib_rel_path = sys.argv[2]
         list_file = sys.argv[3]
 
-        lm = libmgr(base_path, lib_path, list_file)
-        lm.mainloop()
-
-    # lm = libmgr(".", "lib")
-    # lm.mainloop()
+    lm = libmgr(base_path, lib_rel_path, list_file)
+    lm.mainloop()
 
 def libmgr_command(
     base_path: Annotated[str, typer.Option("-b", "--base-path", help="Base path")] = ".",
-    lib_path: Annotated[str, typer.Option("-l", "--lib-path", help="Library relative path")] = "lib",
+    lib_rel_path: Annotated[str, typer.Option("-l", "--lib-path", help="Library relative path")] = "lib",
     list_file: Annotated[str, typer.Option("-f", "--list-file", help="Library list file relative path")] = "liblist.json"
 ):
     """Launch library manager."""
@@ -1089,5 +1092,5 @@ def libmgr_command(
     base_path = os.path.abspath(base_path)
     
     # Launch the GUI application
-    app = libmgr(base_path, lib_path, list_file)
+    app = libmgr(base_path, lib_rel_path, list_file)
     app.mainloop()
