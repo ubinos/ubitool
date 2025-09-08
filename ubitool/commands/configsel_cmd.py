@@ -369,19 +369,6 @@ class confsel(tk.Tk):
 
         return include_file_names
 
-    # def copy_config_info(self, src_config_info, dst_config_name_base):
-    #     src_config_name_base = src_config_info["name_base"]
-
-    #     dst_config_info = copy.deepcopy(src_config_info)
-    #     dst_config_info["name_base"] = dst_config_name_base
-
-    #     if "include_files" in src_config_info:
-    #         for idx, src_file_name in enumerate(src_config_info["include_files"]):
-    #             dst_file_name = src_file_name.replace(src_config_name_base, dst_config_name_base, 1)
-    #             dst_config_info["include_files"][idx] = dst_file_name
-
-    #     return dst_config_info
-
     def create_config_cmake(self, config_cmake_path, config_dir, config_name):
         file = file_open(config_cmake_path, 'w+')
         file.write("set(UBI_CONFIG_DIR \"${CMAKE_CURRENT_LIST_DIR}/%s\")\n" % config_dir)
@@ -505,60 +492,10 @@ class confsel(tk.Tk):
                 if os.path.isdir(src_file_path):
                     shutil.copytree(src_file_path, dst_file_path)
                 else:
-                    file = file_open(src_file_path, 'r')
-                    lines = file.readlines()
-                    file.close()
-                    file = file_open(dst_file_path, 'w+')
+                    shutil.copy(src_file_path, dst_file_path)
 
-                    for line in lines:
-                        written = False
-
-                        # keyword = "ubinos_config_info"
-                        # k_idx = line.find(keyword)
-                        # if not written and k_idx > -1:
-                        #     k_idx = k_idx + len(keyword)
-                        #     config_info_idx = line[k_idx:].find("{")
-                        #     tmp_config_info = json.loads(line[k_idx + config_info_idx:])
-                        #     dst_config_info = self.copy_config_info(tmp_config_info, dst_config_name_base)
-                        #     new_line = line[:k_idx] + " " + json.dumps(dst_config_info) + "\n"
-                        #     file.write(new_line)
-                        #     written = True
-
-                        # keyword = "set(APP__NAME"
-                        # k_idx = line.find(keyword)
-                        # if not written and k_idx > -1:
-                        #     k_idx = k_idx + len(keyword)
-                        #     new_line = line[:k_idx] + line[k_idx:].replace(src_config_name_base, dst_config_name_base, 1)
-                        #     file.write(new_line)
-                        #     written = True
-
-                        # keyword = "APP__NAME = "
-                        # k_idx = line.find(keyword)
-                        # if not written and k_idx > -1:
-                        #     k_idx = k_idx + len(keyword)
-                        #     new_line = line[:k_idx] + line[k_idx:].replace(src_config_name_base, dst_config_name_base, 1)
-                        #     file.write(new_line)
-                        #     written = True
-
-                        keyword = "include(${CMAKE_CURRENT_LIST_DIR}"
-                        k_idx = line.find(keyword)
-                        if not written and k_idx > -1:
-                            k_idx = k_idx + len(keyword)
-                            new_line = line[:k_idx] + line[k_idx:].replace(src_config_name_base, dst_config_name_base, 1)
-                            file.write(new_line)
-                            written = True
-
-                        keyword = ("${CMAKE_CURRENT_LIST_DIR}/%s" % src_config_name_base)
-                        k_idx = line.find(keyword)
-                        if not written and k_idx > -1:
-                            new_line = line[:k_idx] + line[k_idx:].replace(src_config_name_base, dst_config_name_base, 1)
-                            file.write(new_line)
-                            written = True
-
-                        if not written:
-                            file.write(line)
-
-                    file.close()
+            dst_config_file_dir = os.path.join(self.base_path, dst_config_dir, dst_config_name)
+            self.update_project_base_dir(self.base_path, dst_config_file_dir)
 
             self.select_config(dst_config_dir, dst_config_name)
 
@@ -566,6 +503,46 @@ class confsel(tk.Tk):
 
         else:
             return False, "Files already exist."
+
+    def update_project_base_dir(self, base_dir: str, config_dir: str):
+        """
+        config_dir 하위 파일에서 set(PROJECT_BASE_DIR ...) 줄을 찾아서,
+        base_dir까지의 상대 경로로 갱신합니다.
+        """
+        if debug_level >= 2:
+            print(base_dir)
+            print(config_dir)
+            print("")
+
+        base_dir = os.path.abspath(base_dir)
+        for root, _, files in os.walk(config_dir):
+            for fname in files:
+                fpath = os.path.join(root, fname)
+                try:
+                    with open(fpath, "r", encoding="utf-8") as f:
+                        lines = f.readlines()
+                except (UnicodeDecodeError, PermissionError):
+                    continue  # 텍스트 파일이 아니거나 접근 불가 시 무시
+
+                modified = False
+                new_lines = []
+                for line in lines:
+                    if "set(PROJECT_BASE_DIR" in line:
+                        # 파일 위치에서 base_dir 로 가는 상대경로 계산
+                        file_dir = os.path.dirname(fpath)
+                        rel_path = os.path.relpath(base_dir, file_dir)
+                        # CMake 경로 표기를 위해 역슬래시 → 슬래시 변환
+                        rel_path = rel_path.replace(os.sep, "/")
+                        newline = f'set(PROJECT_BASE_DIR "${{CMAKE_CURRENT_LIST_DIR}}/{rel_path}")\n'
+                        new_lines.append(newline)
+                        modified = True
+                    else:
+                        new_lines.append(line)
+
+                if modified:
+                    with open(fpath, "w", encoding="utf-8") as f:
+                        f.writelines(new_lines)
+                    print(f"Updated: {fpath}")
 
     def print_selection(self):
         selection = self.config_items[self.config_item_idx]
