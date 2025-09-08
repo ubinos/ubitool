@@ -216,9 +216,9 @@ class libmgr(tk.Tk):
         self.base_path = base_path
         self.lib_rel_path = lib_rel_path
         self.lib_list_custom_file_name = list_file
-        self.lib_list_custom_file_rel_dir = base_path
+        self.lib_list_custom_file_rel_dir = "."
         self.lib_list_default_file_name = "liblist_default.json"
-        self.lib_list_default_file_rel_dir = base_path
+        self.lib_list_default_file_rel_dir = "."
 
         self.lib_items = []
         self.lib_items_updatable = []
@@ -1076,6 +1076,8 @@ if __name__ == "__main__":
         base_path = sys.argv[1]
         lib_rel_path = sys.argv[2]
         list_file = sys.argv[3]
+
+    base_path = os.path.abspath(base_path)
 
     lm = libmgr(base_path, lib_rel_path, list_file)
     lm.mainloop()

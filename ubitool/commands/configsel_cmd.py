@@ -59,6 +59,8 @@ def set_dialog_geometry_center(parent, win, width, height):
     win.geometry("{}x{}+{}+{}".format(width, height, x_cordinate, y_cordinate))
 
 def file_open(fname, mode):
+    if (debug_level > 2):
+        print("file_open: name: %s, mode: %s" % (fname, mode))
     if sys.version_info.major >= 3:
         return open(fname, mode, encoding="UTF-8")
     else:
@@ -196,6 +198,7 @@ class confsel(tk.Tk):
         self.config_dir_names = ["app", "config"]
         self.config_file_names = ["CMakeLists.txt"]
         self.config_cmake_file_name = "config.cmake"
+        self.config_cmake_path = os.path.join(self.base_path, self.config_cmake_file_name)
 
         self.config_items = []
         self.config_item_idx = 0
@@ -250,10 +253,9 @@ class confsel(tk.Tk):
         self.tv.column(4, width=280)
 
         self.update_config_items()
-        config_cmake_path = os.path.join(self.base_path, self.config_cmake_file_name)
-        config_dir, config_name = self.get_config_from_config_cmake(config_cmake_path)
+        config_dir, config_name = self.get_config_from_config_cmake(self.config_cmake_path)
         if debug_level > 2:
-            print("config_cmake_path = %s" % (config_cmake_path))
+            print("config_cmake_path = %s" % (self.config_cmake_path))
             print("config_dir = %s, config_name = %s" % (config_dir, config_name))
         for conf in self.config_items:
             self.tv.insert(parent='', index=conf["index"], iid=conf["index"], values=(conf["index"], conf["project"], conf["name"], conf["dir"]))
@@ -269,14 +271,19 @@ class confsel(tk.Tk):
 
     def update_config_items(self):
         index = 0
-        prjs = [{"name": ".", "dir": self.base_path}]
+        prjs = [{"name": ".", "dir": "."}]
         lib_dir = os.path.join(self.base_path, self.lib_rel_path)
 
         if os.path.exists(lib_dir):
             for file_name in sorted(os.listdir(lib_dir)):
+                if debug_level > 2:
+                    print("file_name: %s" % file_name)
                 prj_dir = os.path.join(lib_dir, file_name)
+                prj_rel_dir = os.path.join(self.lib_rel_path, file_name)
+                if debug_level > 2:
+                    print("prj_dir: %s" % prj_rel_dir)
                 if os.path.isdir(prj_dir):
-                    prjs += [{"name": file_name, "dir": prj_dir}]
+                    prjs += [{"name": file_name, "dir": prj_rel_dir}]
 
         if debug_level > 2:
             print(lib_dir)
@@ -285,17 +292,22 @@ class confsel(tk.Tk):
 
         for prj in prjs:
             config_dirs = []
+            config_rel_dirs = []
             for config_dir_name in self.config_dir_names:
-                config_dir = pathlib.Path(os.path.join(prj["dir"], config_dir_name)).as_posix()
+                config_dir = pathlib.Path(self.base_path, os.path.join(prj["dir"], config_dir_name)).as_posix()
+                config_rel_dir = pathlib.Path(os.path.join(prj["dir"], config_dir_name)).as_posix()
                 if os.path.exists(config_dir) and os.path.isdir(config_dir):
                     config_dirs.append(config_dir)
+                    config_rel_dirs.append(config_rel_dir)
 
             if debug_level > 2:
                 print("")
                 print(config_dirs)
+                print(config_rel_dirs)
                 print("")
 
-            for config_dir in config_dirs:
+            for idx, config_dir in enumerate(config_dirs):
+                config_rel_dir = config_rel_dirs[idx]
                 # Check subdirectories for config_file_names
                 subdirs = [d for d in sorted(os.listdir(config_dir)) if os.path.isdir(os.path.join(config_dir, d))]
                 for subdir in subdirs:
@@ -310,7 +322,7 @@ class confsel(tk.Tk):
                     if has_config_file:
                         # This subdirectory is a config
                         config_name = subdir
-                        self.config_items.append({"index": index, "project": prj["name"], "name": config_name, "dir": config_dir, "file_name": config_name})
+                        self.config_items.append({"index": index, "project": prj["name"], "name": config_name, "dir": config_rel_dir, "file_name": config_name})
                         index += 1
 
         self.config_len = index
@@ -373,7 +385,7 @@ class confsel(tk.Tk):
 
     def create_config_cmake(self, config_cmake_path, config_dir, config_name):
         file = file_open(config_cmake_path, 'w+')
-        file.write("set(UBI_CONFIG_DIR %s)\n" % config_dir)
+        file.write("set(UBI_CONFIG_DIR \"${CMAKE_CURRENT_LIST_DIR}/%s\")\n" % config_dir)
         file.write("set(UBI_CONFIG_NAME %s)\n" % config_name)
         file.write("\n")
         file.close()
@@ -403,29 +415,29 @@ class confsel(tk.Tk):
 
         return config_dir, config_name
 
-    def select_config(self, config_cmake_path, config_dir, config_name):
-        if not os.path.exists(config_cmake_path):
-            self.create_config_cmake(config_cmake_path, config_dir, config_name)
+    def select_config(self, config_dir, config_name):
+        if not os.path.exists(self.config_cmake_path):
+            self.create_config_cmake(self.config_cmake_path, config_dir, config_name)
 
-        elif not os.path.isdir(config_cmake_path):
-            file = file_open(config_cmake_path, 'r')
+        elif not os.path.isdir(self.config_cmake_path):
+            file = file_open(self.config_cmake_path, 'r')
             file.seek(0, io.SEEK_END)
             file_len = file.tell()
             file.close()
 
             if file_len <= 0:
-                self.create_config_cmake(config_cmake_path, config_dir, config_name)
+                self.create_config_cmake(self.config_cmake_path, config_dir, config_name)
 
             else:
-                shutil.copyfile(config_cmake_path, config_cmake_path + ".bak")
+                shutil.copyfile(self.config_cmake_path, self.config_cmake_path + ".bak")
 
                 need_config_dir = True
                 need_config_name = True
 
-                file = file_open(config_cmake_path, 'r')
+                file = file_open(self.config_cmake_path, 'r')
                 lines = file.readlines()
                 file.close()
-                file = file_open(config_cmake_path, 'w+')
+                file = file_open(self.config_cmake_path, 'w+')
                 for line in lines:
                     if "set(UBI_CONFIG_DIR" in line:
                         file.write("set(UBI_CONFIG_DIR \"${CMAKE_CURRENT_LIST_DIR}/%s\")\n" % config_dir)
@@ -439,9 +451,9 @@ class confsel(tk.Tk):
 
                 # If CONFIG_DIR or CONFIG_NAME not found, append them
                 if need_config_dir or need_config_name:
-                    file = file_open(config_cmake_path, 'a')
+                    file = file_open(self.config_cmake_path, 'a')
                     if need_config_dir:
-                        file.write("set(UBI_CONFIG_DIR %s)\n" % config_dir)
+                        file.write("set(UBI_CONFIG_DIR \"${CMAKE_CURRENT_LIST_DIR}/%s\")\n" % config_dir)
                     if need_config_name:
                         file.write("set(UBI_CONFIG_NAME %s)\n" % config_name)
                     file.close()
@@ -500,7 +512,7 @@ class confsel(tk.Tk):
 
         return is_valid
 
-    def copy_config(self, make_file_path, src_config_dir, src_config_file_name, dst_config_dir, dst_config_name_base):
+    def copy_config(self, src_config_dir, src_config_file_name, dst_config_dir, dst_config_name_base):
         src_file_paths, dst_file_paths, src_config_name_base, dst_config_name = self.get_clone_params(src_config_dir, src_config_file_name, dst_config_dir, dst_config_name_base)
 
         if debug_level >= 2:
@@ -572,7 +584,7 @@ class confsel(tk.Tk):
 
                     file.close()
 
-            self.select_config(self.config_cmake_file_name, dst_config_dir, dst_config_name)
+            self.select_config(dst_config_dir, dst_config_name)
 
             return True, ("%s cloned %s has been created successfully." % (dst_config_name, os.path.splitext(src_config_file_name)[0]))
 
@@ -619,7 +631,7 @@ class confsel(tk.Tk):
                 self.print_selection()
 
             selection = self.config_items[self.config_item_idx]
-            self.select_config(self.config_cmake_file_name, selection["dir"], selection["name"])
+            self.select_config(selection["dir"], selection["name"])
 
         self.quit()
 
@@ -637,7 +649,7 @@ class confsel(tk.Tk):
         self.deiconify()
 
     def press_copy_dialog_ok(self):
-        result, message = self.copy_config(self.config_cmake_file_name, self.copy_dialog.src_config_dir, self.copy_dialog.src_config_file_name, self.copy_dialog.dst_config_dir, self.copy_dialog.dst_config_name_base)
+        result, message = self.copy_config(self.copy_dialog.src_config_dir, self.copy_dialog.src_config_file_name, self.copy_dialog.dst_config_dir, self.copy_dialog.dst_config_name_base)
         if result:
             messagebox.showinfo(
                 title='Copy result',
@@ -661,6 +673,7 @@ if __name__ == '__main__':
     else:
         base_path = sys.argv[1]
         lib_rel_path = sys.argv[2]
+    base_path = os.path.abspath(base_path)
 
     cs = confsel(base_path, lib_rel_path)
     cs.mainloop()
