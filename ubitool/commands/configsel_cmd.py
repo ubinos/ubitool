@@ -68,9 +68,9 @@ def file_open(fname, mode):
 
 class copy_dialog(tk.Toplevel):
 
-    src_config_dir = "../app"
-    src_config_file_name = "myapp"
-    dst_config_dir = "../app"
+    src_config_dir = "app"
+    src_config_name = "myapp"
+    dst_config_dir = "app"
     dst_config_name_base = "myapp_2"
     src_file_paths = []
     dst_file_paths = []
@@ -158,15 +158,14 @@ class copy_dialog(tk.Toplevel):
         if init:
             selection = self.parent.config_items[self.parent.config_item_idx]
             self.src_config_dir = selection["dir"]
-            self.src_config_file_name = selection["file_name"]
-            src_file_paths, dst_file_paths, src_config_name_base, dst_config_name = self.parent.get_clone_params(self.src_config_dir, self.src_config_file_name, self.dst_config_dir, self.dst_config_name_base)
-            self.src_config_name_base = src_config_name_base
-            self.dst_config_name_base = src_config_name_base + "_2"
+            self.src_config_name = selection["name"]
+            self.src_config_name_base = self.src_config_name
+            self.dst_config_name_base = self.src_config_name + "_2"
 
             self.variables['source'].set(self.src_config_name_base)
             self.variables['destination'].set(self.dst_config_name_base)
 
-        src_file_paths, dst_file_paths, src_config_name_base, dst_config_name = self.parent.get_clone_params(self.src_config_dir, self.src_config_file_name, self.dst_config_dir, self.dst_config_name_base)
+        src_file_paths, dst_file_paths, src_config_name_base, dst_config_name = self.parent.get_clone_params(self.src_config_dir, self.src_config_name, self.dst_config_dir, self.dst_config_name_base)
 
         if debug_level >= 2:
             print(src_file_paths)
@@ -196,7 +195,7 @@ class confsel(tk.Tk):
         self.base_path = base_path
         self.lib_rel_path = lib_rel_path
         self.config_dir_names = ["app", "config"]
-        self.config_file_names = ["CMakeLists.txt"]
+        self.config_names = ["CMakeLists.txt"]
         self.config_cmake_file_name = "config.cmake"
         self.config_cmake_path = os.path.join(self.base_path, self.config_cmake_file_name)
 
@@ -308,21 +307,21 @@ class confsel(tk.Tk):
 
             for idx, config_dir in enumerate(config_dirs):
                 config_rel_dir = config_rel_dirs[idx]
-                # Check subdirectories for config_file_names
+                # Check subdirectories for config_names
                 subdirs = [d for d in sorted(os.listdir(config_dir)) if os.path.isdir(os.path.join(config_dir, d))]
                 for subdir in subdirs:
                     subdir_path = os.path.join(config_dir, subdir)
-                    # Check if any of config_file_names exists in this subdirectory
+                    # Check if any of config_names exists in this subdirectory
                     has_config_file = False
-                    for config_file_name in self.config_file_names:
-                        if os.path.exists(os.path.join(subdir_path, config_file_name)):
+                    for config_name in self.config_names:
+                        if os.path.exists(os.path.join(subdir_path, config_name)):
                             has_config_file = True
                             break
                     
                     if has_config_file:
                         # This subdirectory is a config
                         config_name = subdir
-                        self.config_items.append({"index": index, "project": prj["name"], "name": config_name, "dir": config_rel_dir, "file_name": config_name})
+                        self.config_items.append({"index": index, "project": prj["name"], "name": config_name, "dir": config_rel_dir, "name": config_name})
                         index += 1
 
         self.config_len = index
@@ -352,9 +351,9 @@ class confsel(tk.Tk):
 
         return config_info
 
-    def get_cmake_include_file_names(self, config_dir, config_file_name):
+    def get_cmake_include_file_names(self, config_dir, config_name):
         include_file_names = []
-        config_file_path = os.path.join(config_dir, config_file_name)
+        config_file_path = os.path.join(config_dir, config_name)
 
         with file_open(config_file_path, 'r') as file:
             lines = file.readlines()
@@ -370,18 +369,18 @@ class confsel(tk.Tk):
 
         return include_file_names
 
-    def copy_config_info(self, src_config_info, dst_config_name_base):
-        src_config_name_base = src_config_info["name_base"]
+    # def copy_config_info(self, src_config_info, dst_config_name_base):
+    #     src_config_name_base = src_config_info["name_base"]
 
-        dst_config_info = copy.deepcopy(src_config_info)
-        dst_config_info["name_base"] = dst_config_name_base
+    #     dst_config_info = copy.deepcopy(src_config_info)
+    #     dst_config_info["name_base"] = dst_config_name_base
 
-        if "include_files" in src_config_info:
-            for idx, src_file_name in enumerate(src_config_info["include_files"]):
-                dst_file_name = src_file_name.replace(src_config_name_base, dst_config_name_base, 1)
-                dst_config_info["include_files"][idx] = dst_file_name
+    #     if "include_files" in src_config_info:
+    #         for idx, src_file_name in enumerate(src_config_info["include_files"]):
+    #             dst_file_name = src_file_name.replace(src_config_name_base, dst_config_name_base, 1)
+    #             dst_config_info["include_files"][idx] = dst_file_name
 
-        return dst_config_info
+    #     return dst_config_info
 
     def create_config_cmake(self, config_cmake_path, config_dir, config_name):
         file = file_open(config_cmake_path, 'w+')
@@ -458,47 +457,21 @@ class confsel(tk.Tk):
                         file.write("set(UBI_CONFIG_NAME %s)\n" % config_name)
                     file.close()
 
-    def get_clone_params(self, src_config_dir, src_config_file_name, dst_config_dir, dst_config_name_base):
-        src_config_file_path = os.path.join(src_config_dir, src_config_file_name)
-        src_config_info = self.load_config_info(src_config_file_path)
+    def get_clone_params(self, src_config_dir, src_config_name, dst_config_dir, dst_config_name_base):
         src_file_paths = []
-
-        src_config_name_base = src_config_info["name_base"]
-
-        dst_config_file_name = src_config_file_name.replace(src_config_name_base, dst_config_name_base, 1)
-        dst_config_name = os.path.splitext(dst_config_file_name)[0]
-        dst_config_file_path = os.path.join(dst_config_dir, dst_config_file_name)
         dst_file_paths = []
+        src_config_name_base = ""
+        dst_config_name = ""
 
-        src_file_paths.append(src_config_file_path)
-        dst_file_paths.append(dst_config_file_path)
+        src_file_path = os.path.join(src_config_dir, src_config_name)
+        src_file_paths.append(src_file_path)
+        
+        dst_file_path = os.path.join(dst_config_dir, dst_config_name_base)
+        dst_file_paths.append(dst_file_path)
+        
+        src_config_name_base = src_config_name
 
-        if "include_files" in src_config_info:
-            for idx, src_file_name in enumerate(src_config_info["include_files"]):
-                dst_file_name = src_file_name.replace(src_config_name_base, dst_config_name_base, 1)
-                src_file_paths.append(os.path.join(src_config_dir, src_file_name))
-                dst_file_paths.append(os.path.join(dst_config_dir, dst_file_name))
-
-        cmake_include_file_names = self.get_cmake_include_file_names(src_config_dir, src_config_file_name)
-        for src_file_name in cmake_include_file_names:
-            dst_file_name = src_file_name.replace(src_config_name_base, dst_config_name_base, 1)
-            src_file_paths.append(os.path.join(src_config_dir, src_file_name))
-            dst_file_paths.append(os.path.join(dst_config_dir, dst_file_name))
-
-        if (src_config_info is not None and
-            (("app" in src_config_info and src_config_info["app"]) or
-             ("doc" in src_config_info and src_config_info["doc"]) or
-             ("include_sub_dir" in src_config_info and src_config_info["include_sub_dir"]))):
-            src_config_app_path = os.path.join(src_config_dir, src_config_name_base)
-            dst_config_app_path = os.path.join(dst_config_dir, dst_config_name_base)
-            if os.path.exists(src_config_app_path):
-                src_file_paths.append(src_config_app_path + "/")
-                dst_file_paths.append(dst_config_app_path + "/")
-
-        for idx in range(len(src_file_paths)):
-            src_file_paths[idx] = pathlib.Path(src_file_paths[idx]).as_posix()
-        for idx in range(len(dst_file_paths)):
-            dst_file_paths[idx] = pathlib.Path(dst_file_paths[idx]).as_posix()
+        dst_config_name = dst_config_name_base
 
         return src_file_paths, dst_file_paths, src_config_name_base, dst_config_name
 
@@ -512,8 +485,8 @@ class confsel(tk.Tk):
 
         return is_valid
 
-    def copy_config(self, src_config_dir, src_config_file_name, dst_config_dir, dst_config_name_base):
-        src_file_paths, dst_file_paths, src_config_name_base, dst_config_name = self.get_clone_params(src_config_dir, src_config_file_name, dst_config_dir, dst_config_name_base)
+    def copy_config(self, src_config_dir, src_config_name, dst_config_dir, dst_config_name_base):
+        src_file_paths, dst_file_paths, src_config_name_base, dst_config_name = self.get_clone_params(src_config_dir, src_config_name, dst_config_dir, dst_config_name_base)
 
         if debug_level >= 2:
             print(src_file_paths)
@@ -537,32 +510,32 @@ class confsel(tk.Tk):
                     for line in lines:
                         written = False
 
-                        keyword = "ubinos_config_info"
-                        k_idx = line.find(keyword)
-                        if not written and k_idx > -1:
-                            k_idx = k_idx + len(keyword)
-                            config_info_idx = line[k_idx:].find("{")
-                            tmp_config_info = json.loads(line[k_idx + config_info_idx:])
-                            dst_config_info = self.copy_config_info(tmp_config_info, dst_config_name_base)
-                            new_line = line[:k_idx] + " " + json.dumps(dst_config_info) + "\n"
-                            file.write(new_line)
-                            written = True
+                        # keyword = "ubinos_config_info"
+                        # k_idx = line.find(keyword)
+                        # if not written and k_idx > -1:
+                        #     k_idx = k_idx + len(keyword)
+                        #     config_info_idx = line[k_idx:].find("{")
+                        #     tmp_config_info = json.loads(line[k_idx + config_info_idx:])
+                        #     dst_config_info = self.copy_config_info(tmp_config_info, dst_config_name_base)
+                        #     new_line = line[:k_idx] + " " + json.dumps(dst_config_info) + "\n"
+                        #     file.write(new_line)
+                        #     written = True
 
-                        keyword = "set(APP__NAME"
-                        k_idx = line.find(keyword)
-                        if not written and k_idx > -1:
-                            k_idx = k_idx + len(keyword)
-                            new_line = line[:k_idx] + line[k_idx:].replace(src_config_name_base, dst_config_name_base, 1)
-                            file.write(new_line)
-                            written = True
+                        # keyword = "set(APP__NAME"
+                        # k_idx = line.find(keyword)
+                        # if not written and k_idx > -1:
+                        #     k_idx = k_idx + len(keyword)
+                        #     new_line = line[:k_idx] + line[k_idx:].replace(src_config_name_base, dst_config_name_base, 1)
+                        #     file.write(new_line)
+                        #     written = True
 
-                        keyword = "APP__NAME = "
-                        k_idx = line.find(keyword)
-                        if not written and k_idx > -1:
-                            k_idx = k_idx + len(keyword)
-                            new_line = line[:k_idx] + line[k_idx:].replace(src_config_name_base, dst_config_name_base, 1)
-                            file.write(new_line)
-                            written = True
+                        # keyword = "APP__NAME = "
+                        # k_idx = line.find(keyword)
+                        # if not written and k_idx > -1:
+                        #     k_idx = k_idx + len(keyword)
+                        #     new_line = line[:k_idx] + line[k_idx:].replace(src_config_name_base, dst_config_name_base, 1)
+                        #     file.write(new_line)
+                        #     written = True
 
                         keyword = "include(${CMAKE_CURRENT_LIST_DIR}"
                         k_idx = line.find(keyword)
@@ -586,7 +559,7 @@ class confsel(tk.Tk):
 
             self.select_config(dst_config_dir, dst_config_name)
 
-            return True, ("%s cloned %s has been created successfully." % (dst_config_name, os.path.splitext(src_config_file_name)[0]))
+            return True, ("%s cloned %s has been created successfully." % (dst_config_name, os.path.splitext(src_config_name)[0]))
 
         else:
             return False, "Files already exist."
@@ -649,7 +622,7 @@ class confsel(tk.Tk):
         self.deiconify()
 
     def press_copy_dialog_ok(self):
-        result, message = self.copy_config(self.copy_dialog.src_config_dir, self.copy_dialog.src_config_file_name, self.copy_dialog.dst_config_dir, self.copy_dialog.dst_config_name_base)
+        result, message = self.copy_config(self.copy_dialog.src_config_dir, self.copy_dialog.src_config_name, self.copy_dialog.dst_config_dir, self.copy_dialog.dst_config_name_base)
         if result:
             messagebox.showinfo(
                 title='Copy result',
