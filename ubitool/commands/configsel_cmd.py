@@ -72,8 +72,8 @@ class copy_dialog(tk.Toplevel):
     src_config_name = "myapp"
     dst_config_dir = "app"
     dst_config_name_base = "myapp_2"
-    src_file_paths = []
-    dst_file_paths = []
+    src_file_rel_paths = []
+    dst_file_rel_paths = []
 
     def __init__(self, parent):
         super().__init__(parent)
@@ -165,23 +165,23 @@ class copy_dialog(tk.Toplevel):
             self.variables['source'].set(self.src_config_name_base)
             self.variables['destination'].set(self.dst_config_name_base)
 
-        src_file_paths, dst_file_paths, src_config_name_base, dst_config_name = self.parent.get_clone_params(self.src_config_dir, self.src_config_name, self.dst_config_dir, self.dst_config_name_base)
+        src_file_rel_paths, dst_file_rel_paths, src_config_name_base, dst_config_name = self.parent.get_clone_params(self.src_config_dir, self.src_config_name, self.dst_config_dir, self.dst_config_name_base)
 
         if debug_level >= 2:
-            print(src_file_paths)
-            print(dst_file_paths)
+            print(src_file_rel_paths)
+            print(dst_file_rel_paths)
 
-        self.src_file_paths = src_file_paths
-        self.dst_file_paths = dst_file_paths
+        self.src_file_rel_paths = src_file_rel_paths
+        self.dst_file_rel_paths = dst_file_rel_paths
 
         for row in self.tvl.get_children():
             self.tvl.delete(row)
         for row in self.tvr.get_children():
             self.tvr.delete(row)
 
-        for idx, file_path in enumerate(src_file_paths):
+        for idx, file_path in enumerate(src_file_rel_paths):
             self.tvl.insert(parent='', index=idx, iid=idx, values=(file_path))
-        for idx, file_path in enumerate(dst_file_paths):
+        for idx, file_path in enumerate(dst_file_rel_paths):
             self.tvr.insert(parent='', index=idx, iid=idx, values=(file_path))
 
 class confsel(tk.Tk):
@@ -458,27 +458,28 @@ class confsel(tk.Tk):
                     file.close()
 
     def get_clone_params(self, src_config_dir, src_config_name, dst_config_dir, dst_config_name_base):
-        src_file_paths = []
-        dst_file_paths = []
+        src_file_rel_paths = []
+        dst_file_rel_paths = []
         src_config_name_base = ""
         dst_config_name = ""
 
         src_file_path = os.path.join(src_config_dir, src_config_name)
-        src_file_paths.append(src_file_path)
+        src_file_rel_paths.append(src_file_path)
         
         dst_file_path = os.path.join(dst_config_dir, dst_config_name_base)
-        dst_file_paths.append(dst_file_path)
+        dst_file_rel_paths.append(dst_file_path)
         
         src_config_name_base = src_config_name
 
         dst_config_name = dst_config_name_base
 
-        return src_file_paths, dst_file_paths, src_config_name_base, dst_config_name
+        return src_file_rel_paths, dst_file_rel_paths, src_config_name_base, dst_config_name
 
-    def check_clone_dst_file_paths(self, dst_file_paths):
+    def check_clone_dst_file_rel_paths(self, dst_file_rel_paths):
         is_valid = True
 
-        for file_path in dst_file_paths:
+        for file_rel_path in dst_file_rel_paths:
+            file_path = os.path.join(self.base_path, file_rel_path)
             if os.path.exists(file_path):
                 print("%s is already exists" % file_path)
                 is_valid = False
@@ -486,19 +487,21 @@ class confsel(tk.Tk):
         return is_valid
 
     def copy_config(self, src_config_dir, src_config_name, dst_config_dir, dst_config_name_base):
-        src_file_paths, dst_file_paths, src_config_name_base, dst_config_name = self.get_clone_params(src_config_dir, src_config_name, dst_config_dir, dst_config_name_base)
+        src_file_rel_paths, dst_file_rel_paths, src_config_name_base, dst_config_name = self.get_clone_params(src_config_dir, src_config_name, dst_config_dir, dst_config_name_base)
 
         if debug_level >= 2:
-            print(src_file_paths)
-            print(dst_file_paths)
+            print(src_file_rel_paths)
+            print(dst_file_rel_paths)
             print("")
 
         if not os.path.exists(dst_config_dir):
             os.mkdir(dst_config_dir)
 
-        if self.check_clone_dst_file_paths(dst_file_paths):
-            for idx, src_file_path in enumerate(src_file_paths):
-                dst_file_path = dst_file_paths[idx]
+        if self.check_clone_dst_file_rel_paths(dst_file_rel_paths):
+            for idx, src_file_rel_path in enumerate(src_file_rel_paths):
+                dst_file_rel_path = dst_file_rel_paths[idx]
+                src_file_path = os.path.join(self.base_path, src_file_rel_path)
+                dst_file_path = os.path.join(self.base_path, dst_file_rel_path)
                 if os.path.isdir(src_file_path):
                     shutil.copytree(src_file_path, dst_file_path)
                 else:
