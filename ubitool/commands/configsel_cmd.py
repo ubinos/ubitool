@@ -195,7 +195,7 @@ class confsel(tk.Tk):
         self.base_path = base_path
         self.lib_rel_path = lib_rel_path
         self.config_dir_names = ["app", "config"]
-        self.config_names = ["CMakeLists.txt"]
+        self.config_names = ["CMakeLists.txt", "config.yaml"]
         self.config_cmake_file_name = "config.cmake"
         self.config_cmake_path = os.path.join(self.base_path, self.config_cmake_file_name)
 
