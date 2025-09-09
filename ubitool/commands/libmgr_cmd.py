@@ -30,7 +30,7 @@ from collections import Counter
 import typer
 from typing import Annotated
 
-debug_level = 3
+debug_level = 1
 
 true_string = "O"
 false_string = "X"

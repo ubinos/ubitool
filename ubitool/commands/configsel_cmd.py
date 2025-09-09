@@ -24,7 +24,7 @@ from tkinter import messagebox
 import typer
 from typing import Annotated
 
-debug_level = 3
+debug_level = 1
 
 win_width = 1000
 win_height = 700
