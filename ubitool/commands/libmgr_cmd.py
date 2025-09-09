@@ -747,7 +747,7 @@ class libmgr(tk.Tk):
                 for index in checked_items_indexs:
                     selection = self.lib_items[int(index)]
                     target_dir = os.path.join(self.lib_rel_path, selection["name"])
-                    dot_git_dir = os.path.join(self.base_path, ".git", "modules", self.lib_rel_path, selection["name"])
+                    dot_git_dir = os.path.join(".git", "modules", self.lib_rel_path, selection["name"])
                     if  self.is_git_repo(selection["name"]):
                         self.git_commands.append(f"git submodule deinit -f {target_dir}")
                         self.git_commands.append(self.get_platform_rmdir_command(dot_git_dir))
