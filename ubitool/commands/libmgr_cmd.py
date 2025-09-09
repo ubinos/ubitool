@@ -693,12 +693,11 @@ class libmgr(tk.Tk):
 
             checked_items_indexs = self.tv.get_checked()
             if len(checked_items_indexs) > 0:
-                lib_dir = os.path.join(self.base_path, self.lib_rel_path)
                 self.run_command_type = "install"
                 self.git_commands = []
                 for index in checked_items_indexs:
                     selection = self.lib_items[int(index)]
-                    target_dir = os.path.join(lib_dir, selection["name"])
+                    target_dir = os.path.join(self.lib_rel_path, selection["name"])
                     source_url = selection["url"]
                     source_branch = selection["branch"]
                     source_tag = selection["tags"][0]
@@ -743,12 +742,11 @@ class libmgr(tk.Tk):
 
             checked_items_indexs = self.tv.get_checked()
             if len(checked_items_indexs) > 0:
-                lib_dir = os.path.join(self.base_path, self.lib_rel_path)
                 self.run_command_type = "uninstall"
                 self.git_commands = []
                 for index in checked_items_indexs:
                     selection = self.lib_items[int(index)]
-                    target_dir = os.path.join(lib_dir, selection["name"])
+                    target_dir = os.path.join(self.lib_rel_path, selection["name"])
                     dot_git_dir = os.path.join(self.base_path, ".git", "modules", self.lib_rel_path, selection["name"])
                     if  self.is_git_repo(selection["name"]):
                         self.git_commands.append(f"git submodule deinit -f {target_dir}")
@@ -777,12 +775,11 @@ class libmgr(tk.Tk):
 
             checked_items_indexs = self.tv.get_checked()
             if len(checked_items_indexs) > 0:
-                lib_dir = os.path.join(self.base_path, self.lib_rel_path)
                 self.run_command_type = "switch"
                 self.git_commands = []
                 for index in checked_items_indexs:
                     selection = self.lib_items[int(index)]
-                    target_dir = os.path.join(lib_dir, selection["name"])
+                    target_dir = os.path.join(self.lib_rel_path, selection["name"])
                     source_btc_name = ""
                     if selection["branch"] != "":
                         source_btc_name = selection["branch"]
@@ -808,12 +805,11 @@ class libmgr(tk.Tk):
 
             checked_items_indexs = self.tv.get_checked()
             if len(checked_items_indexs) > 0:
-                lib_dir = os.path.join(self.base_path, self.lib_rel_path)
                 self.run_command_type = "reset"
                 self.git_commands = []
                 for index in checked_items_indexs:
                     selection = self.lib_items[int(index)]
-                    target_dir = os.path.join(lib_dir, selection["name"])
+                    target_dir = os.path.join(self.lib_rel_path, selection["name"])
                     self.git_commands.append(f"cd {target_dir} && git reset --hard HEAD")
                     self.git_commands.append(f"cd {target_dir} && git clean -fd")
                 self.run_dialog = run_dialog(self)
@@ -861,12 +857,11 @@ class libmgr(tk.Tk):
 
             checked_items_indexs = self.tv.get_checked()
             if len(checked_items_indexs) > 0:
-                lib_dir = os.path.join(self.base_path, self.lib_rel_path)
                 self.run_command_type = "update"
                 self.git_commands = []
                 for index in checked_items_indexs:
                     selection = self.lib_items[int(index)]
-                    target_dir = os.path.join(lib_dir, selection["name"])
+                    target_dir = os.path.join(self.lib_rel_path, selection["name"])
                     self.git_commands.append(f"cd {target_dir} && git pull")
                 self.run_dialog = run_dialog(self)
                 self.run_dialog.title("Update library commands")
@@ -884,7 +879,7 @@ class libmgr(tk.Tk):
 
         result = True
         for cmd in self.git_commands:
-            run_result = self.run_git_command_with_dialog(cmd)
+            run_result = self.run_git_command_with_dialog(self.base_path, cmd)
             if not run_result:
                 result = False
                 if self.run_command_type != "uninstall":
@@ -911,7 +906,7 @@ class libmgr(tk.Tk):
 
         self.run_command_type = ""
 
-    def run_git_command_with_dialog(self, command):
+    def run_git_command_with_dialog(self, directory, command):
         result = False
         self.run_dialog.append_result(command + "\n")
         try:
@@ -919,10 +914,10 @@ class libmgr(tk.Tk):
                 new_env = os.environ.copy()
                 # new_env["GIT_TRACE"] = "1"
                 # new_env["GIT_SSH_COMMAND"] = "ssh -vvv"
-                process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                process = subprocess.Popen(command, cwd=directory, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                                         bufsize=1, universal_newlines=True, env=new_env)
             else:
-                process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                process = subprocess.Popen(command, cwd=directory, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                                         bufsize=1, universal_newlines=True)
             for line in process.stdout:
                 self.run_dialog.append_result(line)
