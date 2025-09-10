@@ -451,9 +451,11 @@ class confsel(tk.Tk):
         dst_config_name = ""
 
         src_file_path = os.path.join(src_config_dir, src_config_name)
+        src_file_path = src_file_path.replace("\\", "/")
         src_file_rel_paths.append(src_file_path)
         
         dst_file_path = os.path.join(dst_config_dir, dst_config_name_base)
+        dst_file_path = dst_file_path.replace("\\", "/")
         dst_file_rel_paths.append(dst_file_path)
         
         src_config_name_base = src_config_name
