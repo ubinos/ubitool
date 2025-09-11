@@ -215,11 +215,14 @@ tail 명령어
                             [default: 10]
         -c, --bytes INTEGER Number of bytes to display from the end of the file.
                             (Overrides -n if both specified)
+        -a, --ansi-esc      Print ANSI escape sequences from the output.
+                            (Default is not to print ANSI escape sequences)
 
     Examples:
-        ubitool tail /var/log/syslog              # Show last 10 lines
-        ubitool tail -n 20 /var/log/syslog        # Show last 20 lines
-        ubitool tail -c 1024 /var/log/syslog      # Show last 1024 bytes
+        ubitool tail /var/log/syslog            # Show last 10 lines
+        ubitool tail -n 20 /var/log/syslog      # Show last 20 lines
+        ubitool tail -c 1024 /var/log/syslog    # Show last 1024 bytes
+        ubitool tail -a -n 20 /var/log/syslog   # Show last 20 lines (Print ANSI escape sequences)
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 htail 명령어
@@ -244,6 +247,8 @@ htail 명령어
                             [default: 10]
         -c, --bytes INTEGER Maximum number of new bytes to display.
                             (Overrides -n if both specified)
+        -a, --ansi-esc      Print ANSI escape sequences from the output.
+                            (Default is not to print ANSI escape sequences)
         --keep              Do not update last read position.
         --reset             Reset the saved position and read from the beginning.
         --last              Mark current end of file as read (skip to end without displaying).
@@ -278,6 +283,8 @@ shtail 명령어
                                     [default: 10]
         -c, --bytes INTEGER         Maximum number of new bytes to display.
                                     (Overrides -n if both specified)
+        -a, --ansi-esc      Print ANSI escape sequences from the output.
+                            (Default is not to print ANSI escape sequences)
         --keep                      Do not update last read position.
         --reset                     Reset the saved position and read from the beginning.
         --last                      Mark current end of file as read (skip to end without displaying).

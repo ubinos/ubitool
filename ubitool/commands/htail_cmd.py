@@ -10,13 +10,14 @@ def htail_command(
     bytes_count: int = typer.Option(None, "-c", "--bytes", help="Maximum number of new bytes to display. (Overrides -n if both specified)"),
     reset: bool = typer.Option(False, "--reset", help="Reset the saved position and read from the beginning."),
     last: bool = typer.Option(False, "--last", help="Mark current end of file as read (skip to end without displaying)."),
-    keep: bool = typer.Option(False, "--keep", help="Do not update last read position.")
+    keep: bool = typer.Option(False, "--keep", help="Do not update last read position."),
+    ansi_esc: bool = typer.Option(False, "-a", "--ansi-esc", help="Print ANSI escape sequences from the output. (Default is not to print ANSI escape sequences)")
 ):
     """Print the unread portion of a file since last access.
     
     This command tracks the reading position and only displays new content
     added since the last read. The position is saved in a hidden file
     (.FILE.htail) in the same directory as the target file."""
-    
+
     # Use shared htail logic
-    execute_htail_logic(file, lines, bytes_count, reset, last, keep)
+    execute_htail_logic(file, lines, bytes_count, reset, last, keep, ansi_esc)

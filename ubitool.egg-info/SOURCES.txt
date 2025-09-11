@@ -8,3 +8,17 @@ ubitool.egg-info/dependency_links.txt
 ubitool.egg-info/entry_points.txt
 ubitool.egg-info/requires.txt
 ubitool.egg-info/top_level.txt
+ubitool/commands/__init__.py
+ubitool/commands/configsel_cmd.py
+ubitool/commands/htail_cmd.py
+ubitool/commands/json_cmd.py
+ubitool/commands/libmgr_cmd.py
+ubitool/commands/ls_cmd.py
+ubitool/commands/shell_cmd.py
+ubitool/commands/shtail_cmd.py
+ubitool/commands/sort_cmd.py
+ubitool/commands/ssend_cmd.py
+ubitool/commands/stshell_cmd.py
+ubitool/commands/stssend_cmd.py
+ubitool/commands/tail_cmd.py
+ubitool/commands/utils.py

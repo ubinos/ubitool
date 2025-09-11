@@ -1,0 +1,4 @@
+plain line
+[31mred text[0m colored
+middle [32mgreen[0m text
+end

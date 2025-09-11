@@ -19,6 +19,9 @@ Requires-Python: >=3.8
 Description-Content-Type: text/markdown
 Requires-Dist: typer>=0.9.0
 Requires-Dist: ipdb>=0.13.0
+Requires-Dist: jmespath>=1.0.0
+Requires-Dist: json5>=0.9.0
+Requires-Dist: ttkwidgets>=0.13.0
 
 # ubitool
 
