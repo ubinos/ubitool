@@ -1,6 +1,6 @@
 """ubitool - A toolbox for ubinos development."""
 
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 __author__ = "ubinos team"
 __description__ = "A toolbox for ubinos development"
 

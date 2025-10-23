@@ -17,7 +17,7 @@ from .commands.json_cmd import json_command
 from .commands.libmgr_cmd import libmgr_command
 from .commands.configsel_cmd import configsel_command
 
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 
 app = typer.Typer(help="ubitool is a toolbox for ubinos.")
 
