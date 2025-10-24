@@ -364,9 +364,7 @@ class libmgr(tk.Tk):
             lib["installed"] = true_string if self.is_git_repo(lib["name"]) else unknown_string
             lib["modified"] = self.git_check_modified(lib["name"])
             lib["listed"] = false_string
-            if lib["name"] == "ubinos":
-                lib["uninstallable"] = false_string
-            elif self.is_git_repo(lib["name"]):
+            if self.is_git_repo(lib["name"]):
                 lib["uninstallable"] = true_string
             else:
                 lib["uninstallable"] = unknown_string
