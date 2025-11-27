@@ -109,6 +109,7 @@ ubitool은 pip를 통해 설치할 수 있습니다:
         ls              List directory contents or files matching patterns.
         sort            Sort lines of text file or stdin input.
         json            Read or write json file.
+        replace         Replace text in a file.
         libmgr          Launch library manager
         configsel       Launch config selector
 
@@ -195,6 +196,29 @@ json 명령어
 
         # Write "" of "tasks[?label==\"target app reset\"].options.cwd | [0]" key
         ubitool json -w -k "tasks[?label==\"target app reset\"].options.cwd | [0]" -v "./build/pico_hi_world" .vscode/tasks.json
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+replace 명령어
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. code-block:: bash
+
+    Usage: ubitool replace [OPTIONS] FILE SEARCH_TEXT REPLACE_TEXT
+
+        Replace text in a file.
+
+    Arguments:
+        FILE    Path to the target file. [required]
+        SEARCH_TEXT    Text to search for. [required]
+        REPLACE_TEXT   Text to replace with. [required]
+
+    Options:
+        -h, --help           Show this message and exit.
+        -a, --all            Replace all occurrences. If not set, only the first occurrence is replaced.
+
+    Examples:
+        # Replace "old_value" with "new_value" in config.txt
+        ubitool replace config.txt old_value new_value
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 tail 명령어

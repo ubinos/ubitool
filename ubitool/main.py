@@ -16,8 +16,9 @@ from .commands.sort_cmd import sort_command
 from .commands.json_cmd import json_command
 from .commands.libmgr_cmd import libmgr_command
 from .commands.configsel_cmd import configsel_command
+from .commands.replace_cmd import replace_command
 
-__version__ = "1.0.1"
+__version__ = "1.1.0"
 
 app = typer.Typer(help="ubitool is a toolbox for ubinos.")
 
@@ -59,6 +60,7 @@ app.command(name="stshell")(stshell_command)
 app.command(name="ls")(ls_command)
 app.command(name="sort")(sort_command)
 app.command(name="json")(json_command)
+app.command(name="replace")(replace_command)
 app.command(name="libmgr")(libmgr_command)
 app.command(name="configsel")(configsel_command)
 
