@@ -186,7 +186,7 @@ class copy_dialog(tk.Toplevel):
 
 class confsel(tk.Tk):
 
-    def __init__(self, base_path, lib_rel_path):
+    def __init__(self, base_path, lib_rel_path, abspath_config_dir=False):
         super().__init__()
 
         if debug_level >= 2:
@@ -194,6 +194,7 @@ class confsel(tk.Tk):
 
         self.base_path = base_path
         self.lib_rel_path = lib_rel_path
+        self.abspath_config_dir = abspath_config_dir
         self.config_dir_names = ["app", "config", "lib"]
         self.config_names = ["ubiconfig.yaml"]
         self.config_cmake_file_name = "config.cmake"
@@ -259,10 +260,12 @@ class confsel(tk.Tk):
         for conf in self.config_items:
             self.tv.insert(parent='', index=conf["index"], iid=conf["index"], values=(conf["index"], conf["project"], conf["name"], conf["dir"]))
             item_config_dir = ("\"%s\"" % os.path.join("${CMAKE_CURRENT_LIST_DIR}", conf["dir"]))
+            abs_config_dir = os.path.abspath(os.path.join(self.base_path, conf["dir"])).replace("\\", "/")
+            item_config_dir_abs = ("\"%s\"" % abs_config_dir)
             item_config_name = conf["name"]
             if debug_level > 2:
-                print("item_config_dir = %s, item_config_name = %s" % (item_config_dir, item_config_name))
-            if config_dir == item_config_dir and config_name == item_config_name:
+                print("item_config_dir = %s, item_config_dir_abs = %s, item_config_name = %s" % (item_config_dir, item_config_dir_abs, item_config_name))
+            if (config_dir == item_config_dir or config_dir == item_config_dir_abs) and config_name == item_config_name:
                 self.config_item_idx = conf["index"]
 
         self.tv.selection_set(self.config_item_idx)
@@ -369,9 +372,23 @@ class confsel(tk.Tk):
 
         return include_file_names
 
+    def _format_ubi_config_dir_line(self, config_dir: str) -> str:
+        """
+        Generate the CMake line for UBI_CONFIG_DIR.
+
+        When abspath_config_dir is True, UBI_CONFIG_DIR is set to an absolute path.
+        Otherwise, it is set relative to CMAKE_CURRENT_LIST_DIR.
+        """
+        if self.abspath_config_dir:
+            abs_config_dir = os.path.abspath(os.path.join(self.base_path, config_dir))
+            abs_config_dir = abs_config_dir.replace("\\", "/")
+            return f"set(UBI_CONFIG_DIR \"{abs_config_dir}\")\n"
+        else:
+            return f"set(UBI_CONFIG_DIR \"${{CMAKE_CURRENT_LIST_DIR}}/{config_dir}\")\n"
+
     def create_config_cmake(self, config_cmake_path, config_dir, config_name):
         file = file_open(config_cmake_path, 'w+')
-        file.write("set(UBI_CONFIG_DIR \"${CMAKE_CURRENT_LIST_DIR}/%s\")\n" % config_dir)
+        file.write(self._format_ubi_config_dir_line(config_dir))
         file.write("set(UBI_CONFIG_NAME %s)\n" % config_name)
         file.write("\n")
         file.close()
@@ -426,7 +443,7 @@ class confsel(tk.Tk):
                 file = file_open(self.config_cmake_path, 'w+')
                 for line in lines:
                     if "set(UBI_CONFIG_DIR" in line:
-                        file.write("set(UBI_CONFIG_DIR \"${CMAKE_CURRENT_LIST_DIR}/%s\")\n" % config_dir)
+                        file.write(self._format_ubi_config_dir_line(config_dir))
                         need_config_dir = False
                     elif "set(UBI_CONFIG_NAME" in line:
                         file.write("set(UBI_CONFIG_NAME %s)\n" % config_name)
@@ -439,7 +456,7 @@ class confsel(tk.Tk):
                 if need_config_dir or need_config_name:
                     file = file_open(self.config_cmake_path, 'a')
                     if need_config_dir:
-                        file.write("set(UBI_CONFIG_DIR \"${CMAKE_CURRENT_LIST_DIR}/%s\")\n" % config_dir)
+                        file.write(self._format_ubi_config_dir_line(config_dir))
                     if need_config_name:
                         file.write("set(UBI_CONFIG_NAME %s)\n" % config_name)
                     file.close()
@@ -635,7 +652,8 @@ if __name__ == '__main__':
 
 def configsel_command(
     base_path: Annotated[str, typer.Option("-b", "--base-path", help="Base path")] = ".",
-    lib_rel_path: Annotated[str, typer.Option("-l", "--lib-path", help="Library relative path")] = "lib"
+    lib_rel_path: Annotated[str, typer.Option("-l", "--lib-path", help="Library relative path")] = "lib",
+    abspath_config_dir: Annotated[bool, typer.Option("-a", "--abspath-config-dir", help="Set UBI_CONFIG_DIR to an absolute path.")] = False,
 ):
     """Launch config selector."""
     import os
@@ -644,5 +662,5 @@ def configsel_command(
     base_path = os.path.abspath(base_path)
     
     # Launch the GUI application
-    app = confsel(base_path, lib_rel_path)
+    app = confsel(base_path, lib_rel_path, abspath_config_dir)
     app.mainloop()

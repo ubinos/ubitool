@@ -124,11 +124,12 @@ configsel 명령어
         Laungh config selector.
 
     Options:
-        -h, --help              Show this message and exit.
-        -b, --base-path TEXT    Base path
-                                [default: .]
-        -l, --lib-path TEXT     Library relative path
-                                [default: lib]
+        -h, --help                  Show this message and exit.
+        -b, --base-path TEXT        Base path
+                                    [default: .]
+        -l, --lib-path TEXT         Library relative path
+                                    [default: lib]
+        -a, --abspath-config-dir    Set UBI_CONFIG_DIR to an absolute path.
 
     Examples:
         ubitool configsel -b . -l lib

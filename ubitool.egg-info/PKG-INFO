@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: ubitool
-Version: 1.0.1
+Version: 1.1.0
 Summary: A toolbox for ubinos development
 Author: ubinos team
 License: MIT
@@ -56,14 +56,18 @@ ubitool --help
 ### Available Commands
 
 - `tail` - Print the last part of a file
-- `htail` - Print the last part of a file with position tracking
-- `bhtail` - Print the last part of a file from tmux session with position tracking
-- `bsend` - Send keys to a tmux session
-- `stbsend` - Send keys to a tmux session and wait for expected output
-- `shell` - Execute shell commands
-- `stshell` - Execute shell commands and wait for expected output
-- `ls` - List directory contents with filtering
-- `sort` - Sort lines in files or stdin
+- `htail` - Print unread content of a file with position tracking
+- `shtail` - Run `htail` against the latest tmux session log
+- `ssend` - Send keys to a tmux session
+- `stssend` - Retry sending keys to a tmux session until expected output appears
+- `shell` - Execute a shell command
+- `stshell` - Retry a shell command until expected output appears
+- `ls` - List directory contents or files matching patterns
+- `sort` - Sort lines from a file or stdin
+- `json` - Read or write JSON/JSON5 files with JMESPath support
+- `replace` - Replace text in a file
+- `libmgr` - Launch library manager UI
+- `configsel` - Launch config selector UI
 
 ## Development
 

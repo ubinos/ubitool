@@ -14,6 +14,7 @@ ubitool/commands/htail_cmd.py
 ubitool/commands/json_cmd.py
 ubitool/commands/libmgr_cmd.py
 ubitool/commands/ls_cmd.py
+ubitool/commands/replace_cmd.py
 ubitool/commands/shell_cmd.py
 ubitool/commands/shtail_cmd.py
 ubitool/commands/sort_cmd.py
