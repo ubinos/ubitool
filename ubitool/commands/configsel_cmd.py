@@ -202,7 +202,7 @@ class confsel(tk.Tk):
 
         self.config_items = []
         self.config_item_idx = 0
-        self.config_item_len = 0
+        self.config_len = 0
 
         if debug_level >= 1:
             print("Ubinos config selector")
@@ -253,6 +253,13 @@ class confsel(tk.Tk):
         self.tv.column(4, width=280)
 
         self.update_config_items()
+        if self.config_len <= 0:
+            if debug_level >= 1:
+                print("No config items found.\n")
+            select_button.configure(state="disabled")
+            clone_button.configure(state="disabled")
+            return
+
         config_dir, config_name = self.get_config_from_config_cmake(self.config_cmake_path)
         if debug_level > 2:
             print("config_cmake_path = %s" % (self.config_cmake_path))
@@ -272,6 +279,7 @@ class confsel(tk.Tk):
         self.tv.see(self.config_item_idx)
 
     def update_config_items(self):
+        self.config_items = []
         index = 0
         prjs = [{"name": ".", "dir": "."}]
         lib_dir = os.path.join(self.base_path, self.lib_rel_path)
