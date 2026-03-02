@@ -172,6 +172,8 @@ json 명령어
         -w, --write          Write a specified value to a specified key of the json target file (requires --key and --value)
         -k, --key TEXT       Specify a key
         -v, --value TEXT     Specify a value
+        -n, --nofix          Do not fix wrong symbols of value (default is to fix)
+                             "\\$" -> "$"
 
     Examples:
         # Read the value of "C_Cpp.default.compileCommands" key

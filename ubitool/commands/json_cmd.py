@@ -142,7 +142,8 @@ def json_command(
     read: bool = typer.Option(False, "-r", "--read", help="Print the value of a specified key of the json target file (requires --key)"),
     write: bool = typer.Option(False, "-w", "--write", help="Write a specified value to a specified key of the json target file (requires --key and --value)"),
     key: Optional[str] = typer.Option(None, "-k", "--key", help="Specify a key"),
-    value: Optional[str] = typer.Option(None, "-v", "--value", help="Specify a value")
+    value: Optional[str] = typer.Option(None, "-v", "--value", help="Specify a value"),
+    nofix: bool = typer.Option(False, "-n", "--nofix", help='Do not fix wrong symbols of value (default is to fix): "\\\\$" -> "$"')
 ):
     """Print or write JSON5 file (supports comments and relaxed syntax).
     
@@ -152,6 +153,7 @@ def json_command(
         write: Write a value to a specified key
         key: Key to read or write (using JMESPath syntax)
         value: Value to write
+        nofix: Disable value symbol fix ("\\$" -> "$")
     """
     try:
         file_path = Path(file)
@@ -261,6 +263,9 @@ def json_command(
             else:
                 data = {}
             
+            if not nofix and value is not None:
+                value = value.replace("\\$", "$")
+
             # Parse value as JSON if possible
             try:
                 parsed_value = json.loads(value)
