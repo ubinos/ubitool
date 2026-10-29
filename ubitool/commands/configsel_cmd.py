@@ -266,7 +266,7 @@ class confsel(tk.Tk):
             print("config_dir = %s, config_name = %s" % (config_dir, config_name))
         for conf in self.config_items:
             self.tv.insert(parent='', index=conf["index"], iid=conf["index"], values=(conf["index"], conf["project"], conf["name"], conf["dir"]))
-            item_config_dir = ("\"%s\"" % os.path.join("${CMAKE_CURRENT_LIST_DIR}", conf["dir"]))
+            item_config_dir = ("\"${CMAKE_CURRENT_LIST_DIR}/%s\"" % conf["dir"])
             abs_config_dir = os.path.abspath(os.path.join(self.base_path, conf["dir"])).replace("\\", "/")
             item_config_dir_abs = ("\"%s\"" % abs_config_dir)
             item_config_name = conf["name"]
